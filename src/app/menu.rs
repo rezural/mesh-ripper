@@ -1,4 +1,4 @@
-use crate::GameState;
+use super::GameState;
 use bevy::prelude::*;
 
 pub struct MenuPlugin;

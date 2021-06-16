@@ -4,19 +4,24 @@
 #[cfg(target_arch = "wasm32")]
 use bevy_webgl2;
 
-use bevy::prelude::{App, ClearColor, Color, WindowDescriptor};
+mod app;
+
+use bevy::prelude::{App, ClearColor, Color, Msaa, WindowDescriptor};
 use bevy::DefaultPlugins;
-use game_plugin::GamePlugin;
+use app::{AppOptions, GamePlugin};
+use structopt::StructOpt;
 
 fn main() {
+    let options = AppOptions::from_args();
     let mut app = App::build();
+    app.insert_resource(options);
     app
-        // .insert_resource(Msaa { samples: 4 })
+        .insert_resource(Msaa { samples: 4 })
         .insert_resource(ClearColor(Color::rgb(0.4, 0.4, 0.4)))
         .insert_resource(WindowDescriptor {
             width: 800.,
             height: 600.,
-            title: "Bevy game".to_string(), // ToDo
+            title: "Mesh Ripper".to_string(), // ToDo
             ..Default::default()
         })
         .add_plugins(DefaultPlugins)
