@@ -110,7 +110,6 @@ fn check_assets_ready(
     mut actions: ResMut<Actions>, 
     mut fluids: ResMut<FluidAssets>,
 ) {
-    let total = fluids.loading.iter().len();
     let loaded: Vec<(String, Handle<Mesh>)> = fluids.loading
         .iter()
         .filter(|(_, handle)| LoadState::Loaded == server.get_load_state(handle))
