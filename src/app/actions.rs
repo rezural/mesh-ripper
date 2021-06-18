@@ -51,7 +51,7 @@ impl Default for Actions {
             fluids_loaded: 0,
             fluids_loaded_percent: 0.,
             reload: false,
-            fluid_color: Color::rgba(95./255., 133./255., 194./255., 0.96),
+            fluid_color: Color::rgb(95./255., 133./255., 194./255.),
             opacity: 0.96,
         }
     }

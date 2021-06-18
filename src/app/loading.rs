@@ -2,7 +2,7 @@ mod paths;
 
 use std::{path::Path};
 
-use super::{AppOptions, actions::Actions, loading::paths::PATHS};
+use super::{AppOptions, actions::Actions, loading::paths::PATHS, resources::lod_midpoint_iterator::{MidpointIterator}};
 use super::GameState;
 
 use bevy::asset::LoadState;
@@ -76,13 +76,13 @@ fn start_loading(
 
     fluid_files.shuffle(&mut thread_rng());
 
+    let fluid_files: MidpointIterator<String> = MidpointIterator::new(fluid_files, config.load_max);
 
     let fluids_to_load = fluid_files
-        .iter()
-        .map(|fluid_file| (fluid_file.clone(), asset_server.load_untyped(Path::new(fluid_file).strip_prefix("assets/").unwrap())))
+        .map(|fluid_file| (fluid_file.clone(), asset_server.load_untyped(Path::new(&fluid_file).strip_prefix("assets/").unwrap())))
         .collect();
     
-    let water_colour = Color::rgba(95./255., 133./255., 194./255., 0.96);
+    let water_colour = Actions::default().fluid_color;
     let material: Handle<StandardMaterial> = materials.add(water_colour.into());
     let water_material = materials.get_mut(material.clone());
     if let Some(water_material) = water_material {

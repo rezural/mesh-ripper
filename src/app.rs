@@ -32,6 +32,8 @@ enum GameState {
 #[structopt(name = "Options")]
 pub struct AppOptions { 
     file_glob: String,
+    #[structopt(short, long, default_value = "100")]
+    load_max: usize,
 }
 
 pub struct GamePlugin;

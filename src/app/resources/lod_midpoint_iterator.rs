@@ -10,14 +10,8 @@
 // assert_eq!(lod_1.len(), 19 + 18);
 
 
-pub trait LodMidpointIterator<'a, T>: Iterator {
-    fn next_lod(&self) -> Option<&dyn LodMidpointIterator<T, Item = T>>;
-    fn at_max_lod(&self) -> bool;
-    fn indices(&self) -> Vec<usize>;
-}
-
 #[derive(Clone)]
-struct MidpointIterator<T> 
+pub struct MidpointIterator<T> 
 where T: Clone {
     inner: Vec<T>,
     indices: Vec<usize>,
@@ -138,6 +132,7 @@ mod tests {
         assert_eq!(mpi.len(), 37 + 36 );
 
         let mpi = mpi.next_lod().unwrap();
+        // println!("{:?}", mpi.indices());
         assert_eq!(mpi.len(), 100);
     }
 
@@ -166,7 +161,9 @@ mod tests {
         assert_eq!(mpi.len(), 289 + 288);
 
         let mpi = mpi.next_lod().unwrap();
+        // println!("{:?}", mpi.indices());
         assert_eq!(mpi.len(), 1000);
+
     }
 
 

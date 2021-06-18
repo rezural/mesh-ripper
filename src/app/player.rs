@@ -36,6 +36,7 @@ fn spawn_camera(mut commands: Commands,
     ambient_light.brightness = 0.4;
     let fly_camera = FlyCamera {
         max_speed: 4.,
+        accel: 4.,
         key_down: KeyCode::Q,
         key_up: KeyCode::E,
         ..Default::default()
