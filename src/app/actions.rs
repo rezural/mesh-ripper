@@ -80,7 +80,6 @@ fn set_movement_actions(
         actions.reload = true;
     }
 
-
     if keyboard_input.just_pressed(KeyCode::F) {
         if actions.advance_every.as_millis() > 19 {
             actions.advance_every -= Duration::from_millis(10);

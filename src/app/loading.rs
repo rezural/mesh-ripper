@@ -65,6 +65,8 @@ fn start_loading(
     let mut textures: Vec<HandleUntyped> = vec![];
     textures.push(asset_server.load_untyped(PATHS.texture_bevy));
 
+
+    // load files
     let glob = config.file_glob.as_str();
 
     let mut fluid_files: Vec<String> = glob::glob(glob)
@@ -82,12 +84,16 @@ fn start_loading(
         .map(|fluid_file| (fluid_file.clone(), asset_server.load_untyped(Path::new(&fluid_file).strip_prefix("assets/").unwrap())))
         .collect();
     
+    // set the water color
     let water_colour = Actions::default().fluid_color;
     let material: Handle<StandardMaterial> = materials.add(water_colour.into());
     let water_material = materials.get_mut(material.clone());
     if let Some(water_material) = water_material {
         water_material.double_sided = true;
     }
+
+    // get file_glob lods
+    // fluid_files.
 
     commands.insert_resource(FluidAssets {
         loaded: Vec::new(),
@@ -103,7 +109,6 @@ fn start_loading(
 
 
 }
-
 
 fn check_assets_ready(
     server: Res<AssetServer>,
