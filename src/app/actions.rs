@@ -8,7 +8,10 @@ use bevy_inspector_egui::Inspectable;
 pub struct ActionsPlugin;
 
 impl Plugin for ActionsPlugin {
-    fn build(&self, app: &mut AppBuilder) {
+    fn build(
+        &self,
+        app: &mut AppBuilder,
+    ) {
         app.init_resource::<Actions>().add_system_set(
             SystemSet::on_update(GameState::Playing).with_system(set_movement_actions.system()),
         );
@@ -70,7 +73,10 @@ impl Default for Actions {
     }
 }
 
-fn set_movement_actions(mut actions: ResMut<Actions>, keyboard_input: Res<Input<KeyCode>>) {
+fn set_movement_actions(
+    mut actions: ResMut<Actions>,
+    keyboard_input: Res<Input<KeyCode>>,
+) {
     if keyboard_input.just_pressed(KeyCode::T) {
         actions.frame_direction = FrameDirection::Forward;
     }

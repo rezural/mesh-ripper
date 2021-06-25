@@ -1,17 +1,17 @@
 pub mod actions;
 pub mod audio;
+pub mod inspector;
 pub mod loading;
 pub mod menu;
 pub mod player;
 pub mod resources;
-pub mod inspector;
 
+use actions::Actions;
 use actions::ActionsPlugin;
 use audio::InternalAudioPlugin;
 use loading::LoadingPlugin;
 use menu::MenuPlugin;
 use player::PlayerPlugin;
-use actions::Actions;
 
 use bevy::app::AppBuilder;
 // use bevy::diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin};
@@ -30,7 +30,7 @@ enum GameState {
 
 #[derive(StructOpt, Debug)]
 #[structopt(name = "Options")]
-pub struct AppOptions { 
+pub struct AppOptions {
     file_glob: String,
     #[structopt(short, long, default_value = "100")]
     load_max: usize,

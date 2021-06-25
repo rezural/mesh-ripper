@@ -23,7 +23,10 @@ impl<T> MidpointIterator<T>
 where
     T: Clone,
 {
-    pub fn new(inner: Vec<T>, first_lod: usize) -> Self {
+    pub fn new(
+        inner: Vec<T>,
+        first_lod: usize,
+    ) -> Self {
         let step_size =
             (inner.len() as f32 / (first_lod as f32 - 1.).min(inner.len() as f32).round()) as usize;
         let step_size = step_size.max(1);
@@ -44,7 +47,7 @@ where
     }
 
     pub fn next_lod_from_midpoint_iterator(
-        from: &MidpointIterator<T>,
+        from: &MidpointIterator<T>
     ) -> Option<MidpointIterator<T>> {
         let new_indices: Vec<usize> = from
             .indices()
