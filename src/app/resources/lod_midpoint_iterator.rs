@@ -1,5 +1,5 @@
 // Midpoint Iterator
-// Use like so, for an initial iterator that samples 10 values form the inner vec:
+// Use like so, for an initial iterator that samples 10 values from the inner vec:
 // ```
 // let original_data = [0, 100];
 // let iterator = MidpointIterator::new(original_data, 10)
