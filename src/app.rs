@@ -23,6 +23,7 @@ use structopt::StructOpt;
 
 #[derive(Clone, Eq, PartialEq, Debug, Hash)]
 enum GameState {
+    RegisterInitialResources,
     Loading,
     Playing,
     Menu,
@@ -39,8 +40,11 @@ pub struct AppOptions {
 pub struct GamePlugin;
 
 impl Plugin for GamePlugin {
-    fn build(&self, app: &mut AppBuilder) {
-        app.add_state(GameState::Loading)
+    fn build(
+        &self,
+        app: &mut AppBuilder,
+    ) {
+        app.add_state(GameState::RegisterInitialResources)
             .add_plugin(LoadingPlugin)
             .add_plugin(ActionsPlugin)
             .add_plugin(MenuPlugin)

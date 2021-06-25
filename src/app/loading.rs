@@ -20,10 +20,18 @@ impl Plugin for LoadingPlugin {
         app: &mut AppBuilder,
     ) {
         app.add_system_set(
+            SystemSet::on_enter(GameState::RegisterInitialResources).with_system(
+                register_initial_resources
+                    .system()
+                    .label("register_initial_resources"),
+            ),
+        );
+
+        // needs to run after create_load_manager (next frame, unless we use stages)
+        app.add_system_set(
             SystemSet::on_enter(GameState::Loading)
-                .with_system(create_load_manager.system())
-                .with_system(load_mesh_assets.system())
-                .with_system(load_assets.system()),
+                .with_system(load_mesh_assets.system().label("load_mesh_assets"))
+                .with_system(load_assets.system().after("load_mesh_assets")),
         )
         .add_system_set(SystemSet::on_update(GameState::Loading).with_system(check_assets.system()))
         .add_system_set(
@@ -57,10 +65,13 @@ pub struct TextureAssets {
     pub texture_bevy: Handle<Texture>,
 }
 
-fn create_load_manager(
+fn register_initial_resources(
     mut commands: Commands,
     config: Res<AppOptions>,
+    mut materials: ResMut<Assets<StandardMaterial>>,
+    mut state: ResMut<State<GameState>>,
 ) {
+    println!("register_initial_resources");
     // load files
     let glob = config.file_glob.as_str();
 
@@ -76,14 +87,7 @@ fn create_load_manager(
 
     let load_manager = LoadManager::new(fluid_files.clone());
     commands.insert_resource(load_manager.clone());
-}
 
-fn load_mesh_assets(
-    mut commands: Commands,
-    mut materials: ResMut<Assets<StandardMaterial>>,
-    mut load_manager: ResMut<LoadManager>,
-    asset_server: Res<AssetServer>,
-) {
     // set the water color
     let water_colour = Actions::default().fluid_color;
     let material: Handle<StandardMaterial> = materials.add(water_colour.into());
@@ -92,8 +96,6 @@ fn load_mesh_assets(
     if let Some(water_material) = water_material {
         water_material.double_sided = true;
     }
-
-    load_manager.load_assets(&asset_server);
 
     // get file_glob lods
     let mut actions = Actions::default();
@@ -107,8 +109,18 @@ fn load_mesh_assets(
     });
 
     // FIXME: this should probably take a ref
-    let state = AppState::new(load_manager.load_iterator.clone());
-    commands.insert_resource(state);
+    // let app_state = AppState::new(load_manager.load_iterator.clone());
+    // commands.insert_resource(app_state);
+
+    state.set(GameState::Loading).unwrap();
+}
+
+fn load_mesh_assets(
+    mut load_manager: ResMut<LoadManager>,
+    asset_server: Res<AssetServer>,
+) {
+    println!("load_mesh_assets");
+    load_manager.load_assets(&asset_server);
 }
 
 fn check_mesh_assets(
@@ -119,17 +131,17 @@ fn check_mesh_assets(
 ) {
     load_manager.update_load_state(&asset_server);
 
-    actions.fluids_loaded = fluids.loaded.len();
-    actions.fluids_loaded_percent = (fluids.loaded.len().max(1) as f32
-        / (fluids.loaded.len() + load_manager.loading.len()) as f32)
-        * 100.;
-
-    fluids.loaded.extend(load_manager.loaded.clone());
+    fluids.loaded = load_manager.loaded.clone();
     fluids
         .loaded
         .sort_by(|(a, _), (b, _)| alphanumeric_sort::compare_str(a.as_str(), b.as_str()));
 
     fluids.loading = load_manager.loading.clone();
+
+    actions.fluids_loaded = fluids.loaded.len();
+    actions.fluids_loaded_percent = (fluids.loaded.len().max(1) as f32
+        / (fluids.loaded.len() + load_manager.loading.len()) as f32)
+        * 100.;
 }
 
 fn load_assets(

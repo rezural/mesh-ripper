@@ -39,18 +39,21 @@ impl LoadManager {
                 )
             })
             .collect();
+        println!("load_assets: loading len: {}", self.loading.len());
     }
 
     pub fn update_load_state(
         &mut self,
         server: &AssetServer,
     ) {
-        self.loaded = self
+        //TODO: this is not working correctly (len of both is always zero)
+        let newly_loaded: VecAssetLoaded = self
             .loading
             .iter()
             .filter(|(_, handle)| LoadState::Loaded == server.get_load_state(handle))
             .map(|(file, handle)| (file.clone(), server.get_handle(handle)))
             .collect();
+        self.loaded.extend(newly_loaded);
 
         self.loading = self
             .loading
@@ -58,6 +61,11 @@ impl LoadManager {
             .filter(|(_, handle)| !(LoadState::Loaded == server.get_load_state(handle)))
             .cloned()
             .collect();
+        println!(
+            "update_load_state: len: {}, {}",
+            self.loading.len(),
+            self.loaded.len()
+        );
     }
 
     pub fn next_lod(&mut self) {

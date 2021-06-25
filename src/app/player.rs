@@ -86,7 +86,7 @@ fn move_player(
     commands: Commands,
     time: Res<Time>,
     mut actions: ResMut<Actions>,
-    mut state: ResMut<AppState>,
+    // mut state: ResMut<AppState>,
     mut fluid_assets: ResMut<MeshAssets>,
     mut pool: ResMut<MeshPool>,
     mut materials: ResMut<Assets<StandardMaterial>>,
@@ -103,12 +103,12 @@ fn move_player(
     pool.num_fluids = fluid_assets.loaded.len();
 
     // if the user has chosen a higer asset load lod
-    let wanted_lod_len = actions.lods.selected_value();
-    if wanted_lod_len > (load_manager.loaded.len() + load_manager.loading.len()) {
-        load_manager.next_lod_and_reload(&asset_server);
-        state.load_iterator = load_manager.load_iterator.clone();
-        fluid_assets.loading = load_manager.loading.clone();
-    }
+    // let wanted_lod_len = actions.lods.selected_value();
+    // if wanted_lod_len > (load_manager.loaded.len() + load_manager.loading.len()) {
+    //     load_manager.next_lod_and_reload(&asset_server);
+    //     state.load_iterator = load_manager.load_iterator.clone();
+    //     fluid_assets.loading = load_manager.loading.clone();
+    // }
 
     let material = materials.get_handle(fluid_assets.material.id);
     let material = materials.get_mut(material.clone());
