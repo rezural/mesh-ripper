@@ -2,6 +2,8 @@ mod paths;
 
 use std::{path::Path};
 
+use crate::app::inspector::vec_as_dropdown::VecAsDropdown;
+
 use super::{AppOptions, actions::Actions, loading::paths::PATHS, resources::lod_midpoint_iterator::{MidpointIterator}};
 use super::GameState;
 
@@ -11,6 +13,8 @@ use bevy_kira_audio::AudioSource;
 
 use rand::thread_rng;
 use rand::seq::SliceRandom;
+
+use crate::app::actions::State as AppState;
 
 pub struct LoadingPlugin;
 
@@ -81,6 +85,7 @@ fn start_loading(
     let fluid_files: MidpointIterator<String> = MidpointIterator::new(fluid_files, config.load_max);
 
     let fluids_to_load = fluid_files
+        .clone()
         .map(|fluid_file| (fluid_file.clone(), asset_server.load_untyped(Path::new(&fluid_file).strip_prefix("assets/").unwrap())))
         .collect();
     
@@ -93,7 +98,12 @@ fn start_loading(
     }
 
     // get file_glob lods
-    // fluid_files.
+    let mut actions = Actions::default();
+    actions.lods = VecAsDropdown::new(fluid_files.clone().get_lods());
+    commands.insert_resource(actions);
+
+    let state = AppState::new(fluid_files);
+    commands.insert_resource(state);
 
     commands.insert_resource(FluidAssets {
         loaded: Vec::new(),
@@ -106,8 +116,6 @@ fn start_loading(
         fonts,
         audio,
     });
-
-
 }
 
 fn check_assets_ready(

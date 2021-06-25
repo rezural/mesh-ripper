@@ -5,6 +5,7 @@ use super::GameState;
 use bevy::{pbr::AmbientLight, prelude::*, render::camera::PerspectiveProjection};
 use bevy_fly_camera::{FlyCamera, FlyCameraPlugin};
 
+use super::actions::State as AppState;
 pub struct PlayerPlugin;
 
 pub struct Player;
@@ -184,9 +185,11 @@ fn move_player(
     commands: Commands,
     time: Res<Time>,
     mut actions: ResMut<Actions>,
-    fluid_assets: Res<FluidAssets>,
+    mut state: ResMut<AppState>,
+    mut fluid_assets: ResMut<FluidAssets>,
     mut pool: ResMut<FluidPool>,
     mut materials: ResMut<Assets<StandardMaterial>>,
+    asset_server: Res<AssetServer>,
 ) {
     pool.advance_every = actions.advance_every;
     pool.frame_direction = actions.frame_direction.clone();
@@ -197,6 +200,22 @@ fn move_player(
     }
     pool.num_fluids = fluid_assets.loaded.len();
 
+    // if the user has chosen a higer asset load lod
+    let wanted_lod_len = actions.lods.selected_value();
+    if wanted_lod_len > (fluid_assets.loaded.len() + fluid_assets.loading.len()) {
+        if let Some(next_lod) = state.load_iterator.next_lod() {
+            state.load_iterator = next_lod;
+
+            let fluids_to_load: Vec<(String, HandleUntyped)> = state
+                .load_iterator
+                .clone()
+                .map(|fluid_file| (fluid_file.clone(), asset_server.load_untyped(Path::new(&fluid_file).strip_prefix("assets/").unwrap())))
+                .collect();
+            
+            fluid_assets.loading.extend(fluids_to_load);
+        }
+    }
+
     let material = materials.get_handle(fluid_assets.material.id);
     let material = materials.get_mut(material.clone());
 
@@ -206,7 +225,6 @@ fn move_player(
         let material = materials.get_handle(fluid_assets.material.id);
         pool.update_fluid(commands, (*fluid_assets).clone(), material, time.delta());
     }
-
 
 }
 

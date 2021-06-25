@@ -4,7 +4,7 @@ pub mod loading;
 pub mod menu;
 pub mod player;
 pub mod resources;
-
+pub mod inspector;
 
 use actions::ActionsPlugin;
 use audio::InternalAudioPlugin;
