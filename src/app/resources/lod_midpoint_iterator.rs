@@ -9,20 +9,23 @@
 // let lod_2 = lod_1.next_lod();
 // assert_eq!(lod_1.len(), 19 + 18);
 
-
 #[derive(Clone, Debug)]
-pub struct MidpointIterator<T> 
-where T: Clone {
+pub struct MidpointIterator<T>
+where
+    T: Clone,
+{
     inner: Vec<T>,
     indices: Vec<usize>,
     current_index: usize,
 }
 
-impl <T> MidpointIterator<T> 
-where T: Clone {
+impl<T> MidpointIterator<T>
+where
+    T: Clone,
+{
     pub fn new(inner: Vec<T>, first_lod: usize) -> Self {
-        let step_size = (inner.len() as f32 
-            / (first_lod as f32 - 1.).min(inner.len() as f32).round()) as usize;
+        let step_size =
+            (inner.len() as f32 / (first_lod as f32 - 1.).min(inner.len() as f32).round()) as usize;
         let step_size = step_size.max(1);
         let mut indices: Vec<usize> = inner
             .iter()
@@ -40,22 +43,24 @@ where T: Clone {
         }
     }
 
-    pub fn next_lod_from_midpoint_iterator(from: &MidpointIterator<T>) -> Option<MidpointIterator<T>> {
+    pub fn next_lod_from_midpoint_iterator(
+        from: &MidpointIterator<T>,
+    ) -> Option<MidpointIterator<T>> {
         let new_indices: Vec<usize> = from
             .indices()
             .iter()
             .enumerate()
             .flat_map(|(i, &actual_index)| {
                 // if we are at the last element of the original iterator, we dont need to get the midpoint (there is none)
-                if let Some(&next) = from.indices.get(i+1) {
+                if let Some(&next) = from.indices.get(i + 1) {
                     let midpoint: usize = (actual_index + next) / 2;
                     // the indices are adjacent (there is no gap)
                     if midpoint == actual_index || midpoint == next {
-                        return vec!(actual_index)
+                        return vec![actual_index];
                     }
-                    return vec!(actual_index, midpoint);
+                    return vec![actual_index, midpoint];
                 }
-                vec!(actual_index)
+                vec![actual_index]
             })
             .collect();
 
@@ -87,7 +92,6 @@ where T: Clone {
             }
         }
         lods
-
     }
 
     pub fn is_saturated(&self) -> bool {
@@ -108,27 +112,27 @@ where T: Clone {
     pub fn len(&self) -> usize {
         self.indices().len()
     }
-
 }
 
-impl <T> Iterator for MidpointIterator<T> 
-where T: Clone {
+impl<T> Iterator for MidpointIterator<T>
+where
+    T: Clone,
+{
     type Item = T;
 
     fn next(&mut self) -> Option<Self::Item> {
         let index = self.indices.get(self.current_index);
         if let Some(index) = index {
             let next = self.inner.get(*index);
-                if let Some(next) = next {
-                    self.current_index = self.current_index + 1;
-                    return Some((*next).clone())
-                }
+            if let Some(next) = next {
+                self.current_index = self.current_index + 1;
+                return Some((*next).clone());
             }
+        }
 
         None
     }
 }
-
 
 #[cfg(test)]
 mod tests {
@@ -148,14 +152,13 @@ mod tests {
         if let Some(_) = mpi.next_lod() {
             assert!(false)
         }
-
     }
-    
+
     #[test]
     fn test_one_hundred() {
         let hundred = [0; 100];
         let mpi = MidpointIterator::new(hundred.into(), 10);
-        
+
         assert_eq!(mpi.len(), 10);
         assert_eq!(mpi.get_lods(), [10, 19, 19 + 18, 37 + 36, 100]);
 
@@ -166,7 +169,7 @@ mod tests {
         assert_eq!(mpi.len(), 19 + 18);
 
         let mpi = mpi.next_lod().unwrap();
-        assert_eq!(mpi.len(), 37 + 36 );
+        assert_eq!(mpi.len(), 37 + 36);
 
         let mpi = mpi.next_lod().unwrap();
         // println!("{:?}", mpi.indices());
@@ -190,7 +193,7 @@ mod tests {
         assert_eq!(mpi.len(), 19 + 18);
 
         let mpi = mpi.next_lod().unwrap();
-        assert_eq!(mpi.len(), 37 + 36 );
+        assert_eq!(mpi.len(), 37 + 36);
 
         let mpi = mpi.next_lod().unwrap();
         assert_eq!(mpi.len(), 73 + 72);
@@ -204,8 +207,5 @@ mod tests {
         let mpi = mpi.next_lod().unwrap();
         // println!("{:?}", mpi.indices());
         assert_eq!(mpi.len(), 1000);
-
     }
-
-
 }

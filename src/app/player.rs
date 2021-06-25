@@ -1,7 +1,12 @@
 use std::{path::Path, time::Duration};
 
-use super::{AppOptions, actions::{Actions, FrameDirection}, loading::FluidAssets, resources::wave_positions::WavePositions};
 use super::GameState;
+use super::{
+    actions::{Actions, FrameDirection},
+    loading::FluidAssets,
+    resources::wave_positions::WavePositions,
+    AppOptions,
+};
 use bevy::{pbr::AmbientLight, prelude::*, render::camera::PerspectiveProjection};
 use bevy_fly_camera::{FlyCamera, FlyCameraPlugin};
 
@@ -12,27 +17,23 @@ pub struct Player;
 
 impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut AppBuilder) {
-        app
-            .add_plugin(FlyCameraPlugin);
+        app.add_plugin(FlyCameraPlugin);
 
         app.add_system_set(
             SystemSet::on_enter(GameState::Playing)
                 .with_system(spawn_camera.system())
-                .with_system(spawn_world.system())
+                .with_system(spawn_world.system()),
         )
-        .add_system_set(SystemSet::on_update(GameState::Playing)
-            .with_system(move_player.system())
-            .with_system(check_for_reload.system())
+        .add_system_set(
+            SystemSet::on_update(GameState::Playing)
+                .with_system(move_player.system())
+                .with_system(check_for_reload.system()),
         )
-
-        
         .add_system_set(SystemSet::on_exit(GameState::Playing).with_system(remove_player.system()));
     }
 }
 
-fn spawn_camera(mut commands: Commands,
-    mut ambient_light: ResMut<AmbientLight>,
-) {
+fn spawn_camera(mut commands: Commands, mut ambient_light: ResMut<AmbientLight>) {
     ambient_light.color = Color::WHITE;
     ambient_light.brightness = 0.4;
     let fly_camera = FlyCamera {
@@ -67,7 +68,6 @@ pub struct FluidPool {
     needs_update: bool,
     advance_every: Duration,
     currently_advanced: Duration,
-
     // current_fluid: &'a Handle<Mesh>,
 }
 
@@ -96,7 +96,6 @@ impl FluidPool {
         } else {
             self.num_fluids - 1
         };
-
     }
 
     fn move_in_frame_direction(&mut self) {
@@ -105,7 +104,6 @@ impl FluidPool {
         } else if let FrameDirection::Back = self.frame_direction {
             self.retreat();
         }
-
     }
 
     pub fn reset(&mut self) {
@@ -119,7 +117,13 @@ impl FluidPool {
         self.currently_advanced + delta > self.advance_every
     }
 
-    pub fn update_fluid(&mut self, mut commands: Commands, fluids: FluidAssets, water_material: Handle<StandardMaterial>, delta: Duration) {
+    pub fn update_fluid(
+        &mut self,
+        mut commands: Commands,
+        fluids: FluidAssets,
+        water_material: Handle<StandardMaterial>,
+        delta: Duration,
+    ) {
         if !self.needs_update(delta) {
             self.currently_advanced += delta;
             return;
@@ -133,34 +137,32 @@ impl FluidPool {
             current_entity.despawn_recursive();
         }
 
-        let new_fluid = fluids
-            .loaded
-            .get(self.current_fluid_index)
-            .unwrap()
-            .clone();
+        let new_fluid = fluids.loaded.get(self.current_fluid_index).unwrap().clone();
 
-        let entity = commands.spawn().insert_bundle(PbrBundle {
-            mesh: new_fluid.1.clone(),
-            material: water_material.clone(),
-            transform: Transform {
-                scale: Vec3::new(4., 4., 4.),
+        let entity = commands
+            .spawn()
+            .insert_bundle(PbrBundle {
+                mesh: new_fluid.1.clone(),
+                material: water_material.clone(),
+                transform: Transform {
+                    scale: Vec3::new(4., 4., 4.),
+                    ..Default::default()
+                },
                 ..Default::default()
-            },
-            ..Default::default()
-        }).id();
+            })
+            .id();
 
         self.current_mesh_handle = Some(new_fluid.1);
         self.current_fluid_entity = Some(entity);
-
     }
 
-    pub fn _update_position(&mut self,
+    pub fn _update_position(
+        &mut self,
         _fluid_assets: FluidAssets,
         _positions: WavePositions,
     ) -> Option<Vec3> {
         None
     }
-
 }
 
 fn spawn_world(
@@ -169,16 +171,18 @@ fn spawn_world(
     fluid_assets: Res<FluidAssets>,
     actions: Res<Actions>,
     time: Res<Time>,
-
 ) {
-
     let fluid_pool_length = fluid_assets.loaded.len();
     let mut pool = FluidPool::new(fluid_pool_length, actions.advance_every);
     commands.insert_resource(pool.clone());
 
     let water_material = materials.get_handle(fluid_assets.material.id);
-    pool.update_fluid(commands, (*fluid_assets).clone(), water_material, time.delta());
-    
+    pool.update_fluid(
+        commands,
+        (*fluid_assets).clone(),
+        water_material,
+        time.delta(),
+    );
 }
 
 fn move_player(
@@ -211,9 +215,15 @@ fn move_player(
                 .clone()
                 .filter(|to_load| !fluid_assets.loading.iter().any(|f| f.0 == *to_load))
                 .filter(|to_load| !fluid_assets.loaded.iter().any(|f| f.0 == *to_load))
-                .map(|fluid_file| (fluid_file.clone(), asset_server.load_untyped(Path::new(&fluid_file).strip_prefix("assets/").unwrap())))
+                .map(|fluid_file| {
+                    (
+                        fluid_file.clone(),
+                        asset_server
+                            .load_untyped(Path::new(&fluid_file).strip_prefix("assets/").unwrap()),
+                    )
+                })
                 .collect();
-            
+
             fluid_assets.loading.extend(fluids_to_load);
         }
     }
@@ -221,13 +231,11 @@ fn move_player(
     let material = materials.get_handle(fluid_assets.material.id);
     let material = materials.get_mut(material.clone());
 
-    
     if let Some(material) = material {
         material.base_color = actions.fluid_color;
         let material = materials.get_handle(fluid_assets.material.id);
         pool.update_fluid(commands, (*fluid_assets).clone(), material, time.delta());
     }
-
 }
 
 fn check_for_reload(
@@ -236,7 +244,7 @@ fn check_for_reload(
     config: Res<AppOptions>,
     asset_server: ResMut<AssetServer>,
 ) {
-    if !actions.reload  {
+    if !actions.reload {
         return;
     }
 
@@ -248,7 +256,6 @@ fn add_extra_files_to_load(
     config: Res<AppOptions>,
     mut fluid_assets: ResMut<FluidAssets>,
     asset_server: ResMut<AssetServer>,
-
 ) {
     let glob = config.file_glob.as_str();
 
@@ -256,26 +263,30 @@ fn add_extra_files_to_load(
         .expect("Loading fluid from assets failed in glob")
         .map(|entry| entry.unwrap().to_string_lossy().to_string())
         .collect();
-    
 
-    let not_already_loading = fluid_files
-    .iter()
-    .filter(|&file_name| 
-        !fluid_assets.loading.iter().any(|(loaded_name, _)| 
-            file_name == loaded_name
-        ));
+    let not_already_loading = fluid_files.iter().filter(|&file_name| {
+        !fluid_assets
+            .loading
+            .iter()
+            .any(|(loaded_name, _)| file_name == loaded_name)
+    });
 
-    let fluids_to_load = not_already_loading
-        .filter(|&file_name| 
-            !fluid_assets.loaded.iter().any(|(loaded_name, _)| 
-                file_name == loaded_name
-            ));
+    let fluids_to_load = not_already_loading.filter(|&file_name| {
+        !fluid_assets
+            .loaded
+            .iter()
+            .any(|(loaded_name, _)| file_name == loaded_name)
+    });
 
     let fluids_to_load: Vec<(String, HandleUntyped)> = fluids_to_load
-        .map(|fluid_file| (fluid_file.clone(), asset_server.load_untyped(Path::new(&fluid_file).strip_prefix("assets/").unwrap())))
+        .map(|fluid_file| {
+            (
+                fluid_file.clone(),
+                asset_server.load_untyped(Path::new(&fluid_file).strip_prefix("assets/").unwrap()),
+            )
+        })
         .collect();
 
-    
     fluid_assets.loading.extend(fluids_to_load);
 }
 

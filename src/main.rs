@@ -6,17 +6,16 @@ use bevy_webgl2;
 
 mod app;
 
+use app::{AppOptions, GamePlugin};
 use bevy::prelude::{App, ClearColor, Color, Msaa, WindowDescriptor};
 use bevy::DefaultPlugins;
-use app::{AppOptions, GamePlugin};
 use structopt::StructOpt;
 
 fn main() {
     let options = AppOptions::from_args();
     let mut app = App::build();
     app.insert_resource(options);
-    app
-        .insert_resource(Msaa { samples: 4 })
+    app.insert_resource(Msaa { samples: 4 })
         .insert_resource(ClearColor(Color::rgb(0.4, 0.4, 0.4)))
         .insert_resource(WindowDescriptor {
             width: 800.,
@@ -32,7 +31,3 @@ fn main() {
 
     app.run();
 }
- 
- 
- 
- 

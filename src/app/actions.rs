@@ -1,9 +1,9 @@
 use std::time::Duration;
 
-use super::{GameState, resources::lod_midpoint_iterator::MidpointIterator};
-use bevy::{prelude::*};
-use bevy_inspector_egui::Inspectable;
 use super::inspector::vec_as_dropdown::VecAsDropdown;
+use super::{resources::lod_midpoint_iterator::MidpointIterator, GameState};
+use bevy::prelude::*;
+use bevy_inspector_egui::Inspectable;
 
 pub struct ActionsPlugin;
 
@@ -48,9 +48,7 @@ pub struct State {
 
 impl State {
     pub fn new(load_iterator: MidpointIterator<String>) -> Self {
-        Self {
-            load_iterator,
-        }
+        Self { load_iterator }
     }
 }
 
@@ -58,23 +56,21 @@ impl Default for Actions {
     fn default() -> Self {
         Self {
             player_movement: None,
-            advance_every: Duration::from_secs_f32(1./10.),
+            advance_every: Duration::from_secs_f32(1. / 10.),
             // last_time_drawn: Instant::now(),
             reset: false,
             frame_direction: Default::default(),
             fluids_loaded: 0,
             fluids_loaded_percent: 0.,
             reload: false,
-            fluid_color: Color::rgb(95./255., 133./255., 194./255.),
+            fluid_color: Color::rgb(95. / 255., 133. / 255., 194. / 255.),
             opacity: 0.96,
             lods: VecAsDropdown::default(),
         }
     }
 }
 
-fn set_movement_actions(
-    mut actions: ResMut<Actions>, 
-    keyboard_input: Res<Input<KeyCode>>) {
+fn set_movement_actions(mut actions: ResMut<Actions>, keyboard_input: Res<Input<KeyCode>>) {
     if keyboard_input.just_pressed(KeyCode::T) {
         actions.frame_direction = FrameDirection::Forward;
     }
@@ -86,8 +82,8 @@ fn set_movement_actions(
     if keyboard_input.just_pressed(KeyCode::Space) {
         actions.frame_direction = FrameDirection::Paused;
     }
-    
-    if keyboard_input.just_pressed(KeyCode::R) &&  !keyboard_input.pressed(KeyCode::LControl) {
+
+    if keyboard_input.just_pressed(KeyCode::R) && !keyboard_input.pressed(KeyCode::LControl) {
         actions.reset = true;
     }
 

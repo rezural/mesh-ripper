@@ -7,8 +7,6 @@ pub struct WavePositions {
 
 impl WavePositions {
     pub fn _new(positions: Vec<AABB>) -> Self {
-        Self {
-            positions,
-        }
+        Self { positions }
     }
 }

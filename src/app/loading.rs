@@ -1,18 +1,21 @@
 mod paths;
 
-use std::{path::Path};
+use std::path::Path;
 
 use crate::app::inspector::vec_as_dropdown::VecAsDropdown;
 
-use super::{AppOptions, actions::Actions, loading::paths::PATHS, resources::lod_midpoint_iterator::{MidpointIterator}};
 use super::GameState;
+use super::{
+    actions::Actions, loading::paths::PATHS, resources::lod_midpoint_iterator::MidpointIterator,
+    AppOptions,
+};
 
 use bevy::asset::LoadState;
 use bevy::prelude::*;
 use bevy_kira_audio::AudioSource;
 
-use rand::thread_rng;
 use rand::seq::SliceRandom;
+use rand::thread_rng;
 
 use crate::app::actions::State as AppState;
 
@@ -24,8 +27,9 @@ impl Plugin for LoadingPlugin {
             SystemSet::on_enter(GameState::Loading).with_system(start_loading.system()),
         )
         .add_system_set(SystemSet::on_update(GameState::Loading).with_system(check_state.system()))
-        .add_system_set(SystemSet::on_update(GameState::Playing).with_system(check_assets_ready.system()));
-
+        .add_system_set(
+            SystemSet::on_update(GameState::Playing).with_system(check_assets_ready.system()),
+        );
     }
 }
 
@@ -40,7 +44,7 @@ pub struct LoadingState {
 pub struct FluidAssets {
     pub loaded: Vec<(String, Handle<Mesh>)>,
     pub loading: Vec<(String, HandleUntyped)>,
-    pub material: Handle<StandardMaterial>
+    pub material: Handle<StandardMaterial>,
 }
 pub struct FontAssets {
     pub fira_sans: Handle<Font>,
@@ -55,7 +59,7 @@ pub struct TextureAssets {
 }
 
 fn start_loading(
-    mut commands: Commands, 
+    mut commands: Commands,
     asset_server: Res<AssetServer>,
     config: Res<AppOptions>,
     mut materials: ResMut<Assets<StandardMaterial>>,
@@ -69,7 +73,6 @@ fn start_loading(
     let mut textures: Vec<HandleUntyped> = vec![];
     textures.push(asset_server.load_untyped(PATHS.texture_bevy));
 
-
     // load files
     let glob = config.file_glob.as_str();
 
@@ -80,15 +83,18 @@ fn start_loading(
 
     alphanumeric_sort::sort_str_slice(fluid_files.as_mut());
 
-    fluid_files.shuffle(&mut thread_rng());
-
     let fluid_files: MidpointIterator<String> = MidpointIterator::new(fluid_files, config.load_max);
 
     let fluids_to_load = fluid_files
         .clone()
-        .map(|fluid_file| (fluid_file.clone(), asset_server.load_untyped(Path::new(&fluid_file).strip_prefix("assets/").unwrap())))
+        .map(|fluid_file| {
+            (
+                fluid_file.clone(),
+                asset_server.load_untyped(Path::new(&fluid_file).strip_prefix("assets/").unwrap()),
+            )
+        })
         .collect();
-    
+
     // set the water color
     let water_colour = Actions::default().fluid_color;
     let material: Handle<StandardMaterial> = materials.add(water_colour.into());
@@ -120,31 +126,33 @@ fn start_loading(
 
 fn check_assets_ready(
     server: Res<AssetServer>,
-    mut actions: ResMut<Actions>, 
+    mut actions: ResMut<Actions>,
     mut fluids: ResMut<FluidAssets>,
 ) {
-    let loaded: Vec<(String, Handle<Mesh>)> = fluids.loading
+    let loaded: Vec<(String, Handle<Mesh>)> = fluids
+        .loading
         .iter()
         .filter(|(_, handle)| LoadState::Loaded == server.get_load_state(handle))
         .map(|(file, handle)| (file.clone(), server.get_handle(handle)))
         .collect();
-    
-    let loading: Vec<(String, HandleUntyped)> = fluids.loading
+
+    let loading: Vec<(String, HandleUntyped)> = fluids
+        .loading
         .iter()
-        .filter(|(_, handle)| ! (LoadState::Loaded == server.get_load_state(handle)))
+        .filter(|(_, handle)| !(LoadState::Loaded == server.get_load_state(handle)))
         .cloned()
         .collect();
 
-
     actions.fluids_loaded = fluids.loaded.len();
-    actions.fluids_loaded_percent = (fluids.loaded.len().max(1) as f32 / (fluids.loaded.len() + loading.len()) as f32)  * 100.;
+    actions.fluids_loaded_percent =
+        (fluids.loaded.len().max(1) as f32 / (fluids.loaded.len() + loading.len()) as f32) * 100.;
 
     fluids.loaded.extend(loaded);
-    fluids.loaded.sort_by(|(a,_), (b,_)| 
-        alphanumeric_sort::compare_str(a.as_str(), b.as_str()));
-    
-    fluids.loading = loading;
+    fluids
+        .loaded
+        .sort_by(|(a, _), (b, _)| alphanumeric_sort::compare_str(a.as_str(), b.as_str()));
 
+    fluids.loading = loading;
 }
 
 fn check_state(
@@ -152,9 +160,7 @@ fn check_state(
     mut state: ResMut<State<GameState>>,
     asset_server: Res<AssetServer>,
     loading_state: Res<LoadingState>,
-
 ) {
-
     if LoadState::Loaded
         != asset_server.get_group_load_state(loading_state.fonts.iter().map(|handle| handle.id))
     {
@@ -184,5 +190,4 @@ fn check_state(
     });
 
     state.set(GameState::Playing).unwrap();
-
 }
