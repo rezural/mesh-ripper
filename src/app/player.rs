@@ -209,6 +209,8 @@ fn move_player(
             let fluids_to_load: Vec<(String, HandleUntyped)> = state
                 .load_iterator
                 .clone()
+                .filter(|to_load| !fluid_assets.loading.iter().any(|f| f.0 == *to_load))
+                .filter(|to_load| !fluid_assets.loaded.iter().any(|f| f.0 == *to_load))
                 .map(|fluid_file| (fluid_file.clone(), asset_server.load_untyped(Path::new(&fluid_file).strip_prefix("assets/").unwrap())))
                 .collect();
             
