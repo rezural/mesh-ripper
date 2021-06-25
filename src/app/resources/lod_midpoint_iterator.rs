@@ -10,7 +10,7 @@
 // assert_eq!(lod_1.len(), 19 + 18);
 
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct MidpointIterator<T> 
 where T: Clone {
     inner: Vec<T>,
@@ -72,7 +72,32 @@ where T: Clone {
         })
     }
 
+    pub fn get_lods(&self) -> Vec<usize> {
+        let mut current_lod = Some(self.clone());
+        let mut lods = Vec::new();
+        lods.push(self.len());
+        let mut have_lod = true;
+        while have_lod {
+            let next_lod = current_lod.clone().unwrap().next_lod();
+            if let Some(next_lod) = next_lod {
+                lods.push(next_lod.len());
+                current_lod = Some(next_lod);
+            } else {
+                have_lod = false;
+            }
+        }
+        lods
+
+    }
+
+    pub fn is_saturated(&self) -> bool {
+        self.indices.len() == self.inner.len()
+    }
+
     pub fn next_lod(&self) -> Option<MidpointIterator<T>> {
+        if self.is_saturated() {
+            return None;
+        }
         Self::next_lod_from_midpoint_iterator(self)
     }
 
@@ -113,17 +138,27 @@ mod tests {
     fn test_three() {
         let three = vec![1, 2, 3];
         let mpi = MidpointIterator::new(three, 2);
+
         assert_eq!(mpi.len(), 2);
+        assert_eq!(mpi.get_lods(), vec![2, 3]);
 
         let mpi = mpi.next_lod().unwrap();
         assert_eq!(mpi.len(), 3);
+
+        if let Some(_) = mpi.next_lod() {
+            assert!(false)
+        }
+
     }
     
     #[test]
     fn test_one_hundred() {
         let hundred = [0; 100];
         let mpi = MidpointIterator::new(hundred.into(), 10);
+        
         assert_eq!(mpi.len(), 10);
+        assert_eq!(mpi.get_lods(), [10, 19, 19 + 18, 37 + 36, 100]);
+
         let mpi = mpi.next_lod().unwrap();
         assert_eq!(mpi.len(), 19);
 
@@ -136,6 +171,10 @@ mod tests {
         let mpi = mpi.next_lod().unwrap();
         // println!("{:?}", mpi.indices());
         assert_eq!(mpi.len(), 100);
+
+        if let Some(_) = mpi.next_lod() {
+            assert!(false)
+        }
     }
 
     #[test]
