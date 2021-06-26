@@ -15,9 +15,13 @@ This currently only supports obj files. More coming soon.
 
 ## TODO
 
-* Better Camera System
-* Better Loading of assets
-* Ability to load files outside of assets
-* More file format support (3d meshes) like stl, ply, vtk, gltf et al.
+- [ ] Better Camera System
+- [ ] show first frame on startup
+- [ ] Esc to get out of mouse mode
+- [ ] Ability to load files outside of assets
+- [ ] More file format support (3d meshes) like stl, ply, vtk, gltf et al.
+- [x] Pause/Forward/Back -> Forward/Back & separate Pause
+- [x] Better Loading of assets
+
 
 PR's welcome!
