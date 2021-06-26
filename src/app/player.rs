@@ -26,9 +26,32 @@ impl Plugin for PlayerPlugin {
         .add_system_set(
             SystemSet::on_update(GameState::Playing)
                 .with_system(move_player.system())
-                .with_system(check_for_reload.system()),
+                .with_system(check_for_reload.system())
+                .with_system(cursor_grab_system.system()),
         )
         .add_system_set(SystemSet::on_exit(GameState::Playing).with_system(remove_player.system()));
+    }
+}
+
+fn cursor_grab_system(
+    mut windows: ResMut<Windows>,
+    btn: Res<Input<MouseButton>>,
+    key: Res<Input<KeyCode>>,
+    mut query: Query<&mut FlyCamera>,
+) {
+    let window = windows.get_primary_mut().unwrap();
+    for mut camera in query.iter_mut() {
+        if btn.just_pressed(MouseButton::Left) {
+            window.set_cursor_lock_mode(true);
+            window.set_cursor_visibility(false);
+            camera.enabled = true;
+        }
+
+        if key.just_pressed(KeyCode::Escape) {
+            window.set_cursor_lock_mode(false);
+            window.set_cursor_visibility(true);
+            camera.enabled = false;
+        }
     }
 }
 
@@ -48,7 +71,8 @@ fn spawn_camera(
     let eye = Vec3::new(0., 20., 20.);
     let target = Vec3::new(0., 0., 0.);
     commands
-        .spawn_bundle(PerspectiveCameraBundle {
+        .spawn()
+        .insert_bundle(PerspectiveCameraBundle {
             transform: Transform::from_translation(eye).looking_at(target, Vec3::Y),
             perspective_projection: PerspectiveProjection {
                 fov: std::f32::consts::PI / 5.0,
