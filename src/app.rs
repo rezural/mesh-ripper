@@ -1,5 +1,4 @@
 pub mod actions;
-pub mod audio;
 pub mod inspector;
 pub mod loading;
 pub mod menu;
@@ -8,7 +7,6 @@ pub mod resources;
 
 use actions::Actions;
 use actions::ActionsPlugin;
-use audio::InternalAudioPlugin;
 use loading::LoadingPlugin;
 use menu::MenuPlugin;
 use player::PlayerPlugin;
@@ -48,7 +46,6 @@ impl Plugin for GamePlugin {
             .add_plugin(LoadingPlugin)
             .add_plugin(ActionsPlugin)
             .add_plugin(MenuPlugin)
-            .add_plugin(InternalAudioPlugin)
             .add_plugin(PlayerPlugin)
             .add_plugin(ObjPlugin)
             .add_plugin(InspectorPlugin::<Actions>::new())

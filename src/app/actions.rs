@@ -33,7 +33,6 @@ impl Default for FrameDirection {
 
 #[derive(Inspectable)]
 pub struct Actions {
-    pub player_movement: Option<Vec2>,
     pub frame_direction: FrameDirection,
     pub advance_every: Duration,
     pub reset: bool,
@@ -49,7 +48,6 @@ pub struct Actions {
 impl Default for Actions {
     fn default() -> Self {
         Self {
-            player_movement: None,
             advance_every: Duration::from_secs_f32(1. / 10.),
             // last_time_drawn: Instant::now(),
             reset: false,
