@@ -41,6 +41,7 @@ pub struct Actions {
     pub fluids_loaded_percent: f32,
     pub reload: bool,
     pub fluid_color: Color,
+    #[inspectable(min = 0.0, max = 1.0, speed = 0.01)] // attributes get passed to each child
     pub opacity: f32,
     pub lods: VecAsDropdown<usize>,
 }
