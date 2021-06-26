@@ -18,8 +18,10 @@ This currently only supports obj files. More coming soon.
 - [ ] Better Camera System
 - [ ] Esc to get out of mouse mode
 - [ ] Ability to load files outside of assets
-- [ ] More file format support (3d meshes) like stl, ply, vtk, gltf et al.
+- [ ] More file format support (3d meshes) like stl, ply, obj, vtk, gltf et al.
+- [ ] Support for points from stl, ply, vtk, obj
 - [ ] Moving mouse on advance_every should increase in .01 - .0025 increments
+- [ ] Look towards some point on the mesh (or center of mesh, expensive though) on startup, a little above, in front 
 - [x] show first frame on startup
 - [x] Pause/Forward/Back -> Forward/Back & separate Pause
 - [x] Better Loading of assets
