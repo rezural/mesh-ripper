@@ -39,7 +39,7 @@ fn spawn_camera(
     ambient_light.color = Color::WHITE;
     ambient_light.brightness = 0.4;
     let fly_camera = FlyCamera {
-        max_speed: 4.,
+        max_speed: 2.,
         accel: 4.,
         key_down: KeyCode::Q,
         key_up: KeyCode::E,
