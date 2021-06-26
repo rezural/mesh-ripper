@@ -1,7 +1,7 @@
 use std::time::Duration;
 
 use super::inspector::vec_as_dropdown::VecAsDropdown;
-use super::{resources::lod_midpoint_iterator::MidpointIterator, GameState};
+use super::GameState;
 use bevy::prelude::*;
 use bevy_inspector_egui::Inspectable;
 
@@ -43,16 +43,6 @@ pub struct Actions {
     pub fluid_color: Color,
     pub opacity: f32,
     pub lods: VecAsDropdown<usize>,
-}
-
-pub struct State {
-    pub load_iterator: MidpointIterator<String>,
-}
-
-impl State {
-    pub fn new(load_iterator: MidpointIterator<String>) -> Self {
-        Self { load_iterator }
-    }
 }
 
 impl Default for Actions {

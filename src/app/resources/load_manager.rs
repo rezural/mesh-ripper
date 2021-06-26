@@ -29,7 +29,7 @@ impl LoadManager {
         &mut self,
         server: &AssetServer,
     ) {
-        self.loading = self
+        let to_load: VecAssetLoading = self
             .load_iterator
             .clone()
             .map(|fluid_file| {
@@ -39,39 +39,28 @@ impl LoadManager {
                 )
             })
             .collect();
-        println!("load_assets: loading len: {}", self.loading.len());
+        self.loading.extend(to_load);
+        // println!("load_assets: loading len: {}", self.loading.len());
     }
 
     pub fn update_load_state(
         &mut self,
         server: &AssetServer,
     ) {
-        //TODO: this is not working correctly (len of both is always zero)
         let newly_loaded: VecAssetLoaded = self
             .loading
             .iter()
-            .filter(|(_, handle)| LoadState::Loaded == server.get_load_state(handle))
-            .map(|(file, handle)| (file.clone(), server.get_handle(handle)))
+            .filter(|(_, h)| LoadState::Loaded == server.get_load_state(h))
+            .map(|(f, h)| (f.clone(), server.get_handle(h)))
             .collect();
         self.loaded.extend(newly_loaded);
 
         self.loading = self
             .loading
             .iter()
-            .filter(|(_, handle)| !(LoadState::Loaded == server.get_load_state(handle)))
+            .filter(|(_, h)| !(LoadState::Loaded == server.get_load_state(h)))
             .cloned()
             .collect();
-        println!(
-            "update_load_state: len: {}, {}",
-            self.loading.len(),
-            self.loaded.len()
-        );
-    }
-
-    pub fn next_lod(&mut self) {
-        if let Some(next_lod) = self.load_iterator.next_lod() {
-            self.load_iterator = next_lod;
-        }
     }
 
     pub fn next_lod_and_reload(
@@ -83,17 +72,29 @@ impl LoadManager {
         let loading: Vec<(String, HandleUntyped)> = self
             .load_iterator
             .clone()
-            .filter(|to_load| !self.loading.iter().any(|f| f.0 == *to_load))
-            .filter(|to_load| !self.loaded.iter().any(|f| f.0 == *to_load))
-            .map(|fluid_file| {
+            .filter(|f| !self.in_loaded_or_loading(f.clone()))
+            .map(|f| {
                 (
-                    fluid_file.clone(),
-                    server.load_untyped(Path::new(&fluid_file).strip_prefix("assets/").unwrap()),
+                    f.clone(),
+                    server.load_untyped(Path::new(&f).strip_prefix("assets/").unwrap()),
                 )
             })
             .collect();
 
         self.loading.extend(loading)
+    }
+
+    pub fn next_lod(&mut self) {
+        if let Some(next_lod) = self.load_iterator.next_lod() {
+            self.load_iterator = next_lod;
+        }
+    }
+
+    fn in_loaded_or_loading(
+        &self,
+        path: String,
+    ) -> bool {
+        self.loading.iter().any(|f| f.0 == *path) || self.loaded.iter().any(|f| f.0 == *path)
     }
 }
 

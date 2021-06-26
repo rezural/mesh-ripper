@@ -7,7 +7,6 @@ use super::{actions::Actions, loading::MeshAssets, AppOptions};
 use bevy::{pbr::AmbientLight, prelude::*, render::camera::PerspectiveProjection};
 use bevy_fly_camera::{FlyCamera, FlyCameraPlugin};
 
-use super::actions::State as AppState;
 pub struct PlayerPlugin;
 
 pub struct Player;
@@ -103,18 +102,19 @@ fn move_player(
     pool.num_fluids = fluid_assets.loaded.len();
 
     // if the user has chosen a higer asset load lod
-    // let wanted_lod_len = actions.lods.selected_value();
-    // if wanted_lod_len > (load_manager.loaded.len() + load_manager.loading.len()) {
-    //     load_manager.next_lod_and_reload(&asset_server);
-    //     state.load_iterator = load_manager.load_iterator.clone();
-    //     fluid_assets.loading = load_manager.loading.clone();
-    // }
+    let wanted_lod_len = actions.lods.selected_value();
+    if wanted_lod_len > (load_manager.loaded.len() + load_manager.loading.len()) {
+        load_manager.next_lod_and_reload(&asset_server);
+        fluid_assets.loading = load_manager.loading.clone();
+    }
 
     let material = materials.get_handle(fluid_assets.material.id);
     let material = materials.get_mut(material.clone());
 
     if let Some(material) = material {
         material.base_color = actions.fluid_color;
+        material.base_color.set_a(actions.opacity);
+        material.double_sided = true;
         let material = materials.get_handle(fluid_assets.material.id);
         pool.update_fluid(commands, (*fluid_assets).clone(), material, time.delta());
     }

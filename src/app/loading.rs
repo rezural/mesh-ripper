@@ -5,7 +5,6 @@ use super::{
     actions::Actions, loading::paths::PATHS, resources::lod_midpoint_iterator::MidpointIterator,
     AppOptions,
 };
-use crate::app::actions::State as AppState;
 use crate::app::inspector::vec_as_dropdown::VecAsDropdown;
 use crate::app::resources::load_manager::LoadManager;
 use bevy::asset::LoadState;
