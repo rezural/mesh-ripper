@@ -90,25 +90,15 @@ fn spawn_camera(
 
 fn spawn_world(
     mut commands: Commands,
-    materials: ResMut<Assets<StandardMaterial>>,
     fluid_assets: Res<MeshAssets>,
     actions: Res<Actions>,
-    time: Res<Time>,
 ) {
     let fluid_pool_length = fluid_assets.loaded.len();
-    let mut pool = MeshPool::new(fluid_pool_length, actions.advance_every);
+    let pool = MeshPool::new(fluid_pool_length, actions.advance_every);
     commands.insert_resource(pool.clone());
-
-    let water_material = materials.get_handle(fluid_assets.material.id);
-    pool.update_fluid(
-        commands,
-        (*fluid_assets).clone(),
-        water_material,
-        time.delta(),
-    );
 }
 
-//FIXMEL move all this out into stepper.rs, or something
+//FIXME move all this out into stepper.rs, or something
 fn move_player(
     commands: Commands,
     time: Res<Time>,
@@ -148,6 +138,7 @@ fn move_player(
     }
 }
 
+// FIXME: use LoadManager
 fn check_for_reload(
     mut actions: ResMut<Actions>,
     fluid_assets: ResMut<MeshAssets>,
@@ -162,6 +153,7 @@ fn check_for_reload(
     actions.reload = false;
 }
 
+// FIXME: use LoadManager
 fn add_extra_files_to_load(
     config: Res<AppOptions>,
     mut fluid_assets: ResMut<MeshAssets>,

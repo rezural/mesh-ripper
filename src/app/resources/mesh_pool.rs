@@ -10,6 +10,7 @@ pub struct MeshPool {
     pub num_fluids: usize,
     pub frame_direction: FrameDirection,
     pub advance_every: Duration,
+    have_displayed: bool,
     current_fluid_index: usize,
     current_fluid_entity: Option<Entity>,
     current_mesh_handle: Option<Handle<Mesh>>,
@@ -27,6 +28,7 @@ impl MeshPool {
             num_fluids,
             advance_every,
             currently_advanced: Duration::default(),
+            have_displayed: false,
             current_fluid_index: 0,
             current_fluid_entity: None,
             current_mesh_handle: None,
@@ -64,6 +66,9 @@ impl MeshPool {
         &self,
         delta: Duration,
     ) -> bool {
+        if !self.have_displayed {
+            return true;
+        }
         if let FrameDirection::Paused = self.frame_direction {
             return false;
         }
@@ -90,23 +95,27 @@ impl MeshPool {
             current_entity.despawn_recursive();
         }
 
-        let new_fluid = fluids.loaded.get(self.current_fluid_index).unwrap().clone();
+        if fluids.loaded.len() > 0 {
+            self.have_displayed = true;
 
-        let entity = commands
-            .spawn()
-            .insert_bundle(PbrBundle {
-                mesh: new_fluid.1.clone(),
-                material: water_material.clone(),
-                transform: Transform {
-                    scale: Vec3::new(4., 4., 4.),
+            let new_fluid = fluids.loaded.get(self.current_fluid_index).unwrap().clone();
+
+            let entity = commands
+                .spawn()
+                .insert_bundle(PbrBundle {
+                    mesh: new_fluid.1.clone(),
+                    material: water_material.clone(),
+                    transform: Transform {
+                        scale: Vec3::new(4., 4., 4.),
+                        ..Default::default()
+                    },
                     ..Default::default()
-                },
-                ..Default::default()
-            })
-            .id();
+                })
+                .id();
 
-        self.current_mesh_handle = Some(new_fluid.1);
-        self.current_fluid_entity = Some(entity);
+            self.current_mesh_handle = Some(new_fluid.1);
+            self.current_fluid_entity = Some(entity);
+        }
     }
 
     pub fn _update_position(

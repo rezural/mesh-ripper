@@ -1,5 +1,6 @@
 mod paths;
 
+use super::resources::mesh_pool::MeshPool;
 use super::GameState;
 use super::{
     actions::Actions, loading::paths::PATHS, resources::lod_midpoint_iterator::MidpointIterator,
@@ -70,7 +71,6 @@ fn register_initial_resources(
     mut materials: ResMut<Assets<StandardMaterial>>,
     mut state: ResMut<State<GameState>>,
 ) {
-    println!("register_initial_resources");
     // load files
     let glob = config.file_glob.as_str();
 
@@ -118,15 +118,18 @@ fn load_mesh_assets(
     mut load_manager: ResMut<LoadManager>,
     asset_server: Res<AssetServer>,
 ) {
-    println!("load_mesh_assets");
     load_manager.load_assets(&asset_server);
 }
 
 fn check_mesh_assets(
+    commands: Commands,
+    time: Res<Time>,
     mut actions: ResMut<Actions>,
     mut fluids: ResMut<MeshAssets>,
     mut load_manager: ResMut<LoadManager>,
     asset_server: Res<AssetServer>,
+    mut pool: ResMut<MeshPool>,
+    mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
     load_manager.update_load_state(&asset_server);
 
@@ -137,6 +140,18 @@ fn check_mesh_assets(
 
     fluids.loading = load_manager.loading.clone();
 
+    if load_manager.loaded.len() > 0 {
+        let material = materials.get_handle(fluids.material.id);
+        let material = materials.get_mut(material.clone());
+
+        if let Some(material) = material {
+            material.base_color = actions.fluid_color;
+            material.base_color.set_a(actions.opacity);
+            material.double_sided = true;
+            let material = materials.get_handle(fluids.material.id);
+            pool.update_fluid(commands, (*fluids).clone(), material, time.delta());
+        }
+    }
     actions.fluids_loaded = fluids.loaded.len();
     actions.fluids_loaded_percent = (fluids.loaded.len().max(1) as f32
         / (fluids.loaded.len() + load_manager.loading.len()) as f32)
