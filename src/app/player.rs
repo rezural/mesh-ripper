@@ -6,6 +6,7 @@ use super::GameState;
 use super::{actions::Actions, loading::MeshAssets, AppOptions};
 use bevy::{pbr::AmbientLight, prelude::*, render::camera::PerspectiveProjection};
 use bevy_fly_camera::{FlyCamera, FlyCameraPlugin};
+use bevy_inspector_egui::bevy_egui::EguiContext;
 
 pub struct PlayerPlugin;
 
@@ -38,13 +39,16 @@ fn cursor_grab_system(
     btn: Res<Input<MouseButton>>,
     key: Res<Input<KeyCode>>,
     mut query: Query<&mut FlyCamera>,
+    ui_context: Res<EguiContext>,
 ) {
     let window = windows.get_primary_mut().unwrap();
     for mut camera in query.iter_mut() {
         if btn.just_pressed(MouseButton::Left) {
-            window.set_cursor_lock_mode(true);
-            window.set_cursor_visibility(false);
-            camera.enabled = true;
+            if !ui_context.ctx().wants_pointer_input() {
+                window.set_cursor_lock_mode(true);
+                window.set_cursor_visibility(false);
+                camera.enabled = true;
+            }
         }
 
         if key.just_pressed(KeyCode::Escape) {
