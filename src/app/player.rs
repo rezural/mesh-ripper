@@ -102,7 +102,7 @@ fn move_player(
     pool.num_fluids = fluid_assets.loaded.len();
 
     // if the user has chosen a higer asset load lod
-    let wanted_lod_len = actions.lods.selected_value();
+    let wanted_lod_len = actions.load_number_of_frames.selected_value();
     if wanted_lod_len > (load_manager.loaded.len() + load_manager.loading.len()) {
         load_manager.next_lod_and_reload(&asset_server);
         fluid_assets.loading = load_manager.loading.clone();

@@ -98,7 +98,7 @@ fn register_initial_resources(
 
     // get file_glob lods
     let mut actions = Actions::default();
-    actions.lods = VecAsDropdown::new(load_manager.load_iterator.get_lods());
+    actions.load_number_of_frames = VecAsDropdown::new(load_manager.load_iterator.get_lods());
     commands.insert_resource(actions);
 
     commands.insert_resource(MeshAssets {

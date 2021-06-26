@@ -42,7 +42,7 @@ pub struct Actions {
     pub fluid_color: Color,
     #[inspectable(min = 0.0, max = 1.0, speed = 0.01)] // attributes get passed to each child
     pub opacity: f32,
-    pub lods: VecAsDropdown<usize>,
+    pub load_number_of_frames: VecAsDropdown<usize>,
 }
 
 impl Default for Actions {
@@ -57,7 +57,7 @@ impl Default for Actions {
             reload: false,
             fluid_color: Color::rgb(95. / 255., 133. / 255., 194. / 255.),
             opacity: 0.96,
-            lods: VecAsDropdown::default(),
+            load_number_of_frames: VecAsDropdown::default(),
         }
     }
 }
