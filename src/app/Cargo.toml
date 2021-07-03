@@ -1,6 +1,6 @@
 [package]
 name = "mesh_ripper_plugin"
-version = "0.1.0"
+version = "0.3.0"
 publish = false
 authors = ["Rezural <rezural@protonmail.com>"] # ToDo: you are the author ;)
 edition = "2018"
@@ -13,7 +13,7 @@ default = [
     "bevy/bevy_winit",
     "bevy/render",
     "bevy/png",
-    "bevy_kira_audio/ogg"
+    "bevy_kira_audio/ogg",
 ]
 
 native = [
