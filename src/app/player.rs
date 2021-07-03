@@ -122,7 +122,9 @@ fn move_player(
 
     // if the user has chosen a higer asset load lod
     let wanted_lod_len = actions.load_number_of_frames.selected_value();
-    if wanted_lod_len > (load_manager.loaded.len() + load_manager.loading.len()) {
+    if wanted_lod_len > (load_manager.loaded.len() + load_manager.loading.len())
+        && load_manager.fully_loaded()
+    {
         load_manager.next_lod_and_reload(&asset_server);
         fluid_assets.loading = load_manager.loading.clone();
     }

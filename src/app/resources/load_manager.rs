@@ -90,6 +90,10 @@ impl LoadManager {
         }
     }
 
+    pub fn fully_loaded(&self) -> bool {
+        self.loading.len() == 0
+    }
+
     fn in_loaded_or_loading(
         &self,
         path: String,
