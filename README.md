@@ -23,6 +23,7 @@ This currently only supports obj files. More coming soon.
 - [ ] Look towards some point on the mesh (or center of mesh, expensive though) on startup, a little above, in front 
 - [ ] Load and cache from urls
 - [ ] Release mouse when focus lost
+- [ ] Add lights
 - [x] When a lod is chosen that is not directly above the current lod, load the next lod, then the next higher etc, otherwise you get speedup at the start (the files that have been loaded), and jumpy framerate
 - [x] Pause/Forward/Back -> Forward/Back & separate Pause
 - [x] Esc to get out of mouse mode

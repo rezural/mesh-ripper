@@ -94,6 +94,7 @@ fn register_initial_resources(
     let water_material = materials.get_mut(material.clone());
     if let Some(water_material) = water_material {
         water_material.double_sided = true;
+        water_material.roughness = 0.1;
     }
 
     // get file_glob lods

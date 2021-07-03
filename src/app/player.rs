@@ -64,7 +64,27 @@ fn spawn_camera(
     mut ambient_light: ResMut<AmbientLight>,
 ) {
     ambient_light.color = Color::WHITE;
-    ambient_light.brightness = 0.4;
+    ambient_light.brightness = 0.8;
+
+    // let lights = [
+    //     Vec3::new(200.0, 200.0, 200.0),
+    //     Vec3::new(200.0, 200.0, -200.0),
+    //     Vec3::new(-200.0, 200.0, -200.0),
+    //     Vec3::new(-200.0, 200.0, 200.0),
+    // ];
+
+    // for light in lights.iter() {
+    //     commands.spawn_bundle(LightBundle {
+    //         transform: Transform::from_translation(*light),
+    //         light: Light {
+    //             intensity: 10_000.0,
+    //             range: 3_000_000.0,
+    //             ..Default::default()
+    //         },
+    //         ..Default::default()
+    //     });
+    // }
+
     let fly_camera = FlyCamera {
         max_speed: 2.,
         accel: 8.,

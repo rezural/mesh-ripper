@@ -58,7 +58,7 @@ impl Default for Actions {
             fluids_loaded_percent: 0.,
             reload: false,
             fluid_color: Color::rgb(95. / 255., 133. / 255., 194. / 255.),
-            opacity: 0.96,
+            opacity: 1.0,
             load_number_of_frames: VecAsDropdown::default(),
         }
     }
