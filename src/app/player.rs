@@ -67,7 +67,8 @@ fn spawn_camera(
     ambient_light.brightness = 0.4;
     let fly_camera = FlyCamera {
         max_speed: 2.,
-        accel: 4.,
+        accel: 8.,
+
         key_down: KeyCode::Q,
         key_up: KeyCode::E,
         ..Default::default()
@@ -103,7 +104,6 @@ fn move_player(
     commands: Commands,
     time: Res<Time>,
     mut actions: ResMut<Actions>,
-    // mut state: ResMut<AppState>,
     mut fluid_assets: ResMut<MeshAssets>,
     mut pool: ResMut<MeshPool>,
     mut materials: ResMut<Assets<StandardMaterial>>,
@@ -112,6 +112,7 @@ fn move_player(
 ) {
     pool.advance_every = actions.advance_every;
     pool.frame_direction = actions.frame_direction.clone();
+    pool.paused = actions.paused;
 
     if actions.reset {
         pool.reset();

@@ -10,6 +10,7 @@ pub struct MeshPool {
     pub num_fluids: usize,
     pub frame_direction: FrameDirection,
     pub advance_every: Duration,
+    pub paused: bool,
     have_displayed: bool,
     current_fluid_index: usize,
     current_fluid_entity: Option<Entity>,
@@ -28,6 +29,7 @@ impl MeshPool {
             num_fluids,
             advance_every,
             currently_advanced: Duration::default(),
+            paused: true,
             have_displayed: false,
             current_fluid_index: 0,
             current_fluid_entity: None,
@@ -51,6 +53,9 @@ impl MeshPool {
     }
 
     fn move_in_frame_direction(&mut self) {
+        if self.paused {
+            return;
+        }
         if let FrameDirection::Forward = self.frame_direction {
             self.advance();
         } else if let FrameDirection::Back = self.frame_direction {
@@ -69,7 +74,7 @@ impl MeshPool {
         if !self.have_displayed {
             return true;
         }
-        if let FrameDirection::Paused = self.frame_direction {
+        if self.paused {
             return false;
         }
         self.currently_advanced + delta > self.advance_every

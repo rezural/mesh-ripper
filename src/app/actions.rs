@@ -20,14 +20,13 @@ impl Plugin for ActionsPlugin {
 
 #[derive(Inspectable, Debug, Clone)]
 pub enum FrameDirection {
-    Paused,
     Forward,
     Back,
 }
 
 impl Default for FrameDirection {
     fn default() -> Self {
-        FrameDirection::Paused
+        FrameDirection::Forward
     }
 }
 
@@ -36,6 +35,7 @@ pub struct Actions {
     pub frame_direction: FrameDirection,
     pub advance_every: Duration,
     pub reset: bool,
+    pub paused: bool,
     pub fluids_loaded: usize,
     pub fluids_loaded_percent: f32,
     pub reload: bool,
@@ -51,6 +51,7 @@ impl Default for Actions {
         Self {
             advance_every: Duration::from_secs_f32(1. / 10.),
             // last_time_drawn: Instant::now(),
+            paused: true,
             reset: false,
             frame_direction: Default::default(),
             fluids_loaded: 0,
@@ -76,7 +77,7 @@ fn set_movement_actions(
     }
 
     if keyboard_input.just_pressed(KeyCode::Space) {
-        actions.frame_direction = FrameDirection::Paused;
+        actions.paused = !actions.paused;
     }
 
     if keyboard_input.just_pressed(KeyCode::R) && !keyboard_input.pressed(KeyCode::LControl) {
