@@ -86,14 +86,14 @@ fn spawn_camera(
     // }
 
     let fly_camera = FlyCamera {
-        max_speed: 2.,
+        max_speed: 1.,
         accel: 8.,
 
         key_down: KeyCode::Q,
         key_up: KeyCode::E,
         ..Default::default()
     };
-    let eye = Vec3::new(0., 20., 20.);
+    let eye = Vec3::new(0., 40., 20.);
     let target = Vec3::new(0., 0., 0.);
     commands
         .spawn()

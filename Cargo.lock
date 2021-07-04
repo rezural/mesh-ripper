@@ -741,6 +741,21 @@ dependencies = [
 ]
 
 [[package]]
+name = "bevy_stl"
+version = "0.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f7a1d5f7d4ac8be0b6402c6f58199868e63ed2dad231c7d9f0a30b4468522128"
+dependencies = [
+ "anyhow",
+ "bevy_app",
+ "bevy_asset",
+ "bevy_render",
+ "bevy_utils",
+ "stl_io",
+ "thiserror",
+]
+
+[[package]]
 name = "bevy_tasks"
 version = "0.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1614,6 +1629,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "398ea4fabe40b9b0d885340a2a991a44c8a645624075ad966d21f88688e2b69e"
 
 [[package]]
+name = "float-cmp"
+version = "0.8.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e1267f4ac4f343772758f7b1bdcbe767c218bbab93bb432acbf5162bbf85a6c4"
+dependencies = [
+ "num-traits",
+]
+
+[[package]]
 name = "fnv"
 version = "1.0.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2396,7 +2420,7 @@ dependencies = [
 
 [[package]]
 name = "mesh-ripper"
-version = "0.1.0"
+version = "0.3.0"
 dependencies = [
  "alphanumeric-sort",
  "bevy",
@@ -2404,6 +2428,7 @@ dependencies = [
  "bevy_fly_camera",
  "bevy_kira_audio",
  "bevy_obj",
+ "bevy_stl",
  "bevy_webgl2",
  "embed-resource",
  "glob",
@@ -3596,6 +3621,16 @@ name = "stdweb-internal-runtime"
 version = "0.1.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "213701ba3370744dcd1a12960caa4843b3d68b4d1c0a5d575e0d65b2ee9d16c0"
+
+[[package]]
+name = "stl_io"
+version = "0.5.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c9aa78767a21a3f57ea37a9b643c80dcb67ff6b130ccdedc43eaafa9e9cdd7d1"
+dependencies = [
+ "byteorder",
+ "float-cmp",
+]
 
 [[package]]
 name = "storage-map"

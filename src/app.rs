@@ -47,10 +47,12 @@ impl Plugin for GamePlugin {
             .add_plugin(ActionsPlugin)
             .add_plugin(MenuPlugin)
             .add_plugin(PlayerPlugin)
-            .add_plugin(ObjPlugin)
             .add_plugin(InspectorPlugin::<Actions>::new())
             // .add_plugin(FrameTimeDiagnosticsPlugin::default())
             // .add_plugin(LogDiagnosticsPlugin::default())
             ;
+        app
+            .add_plugin(ObjPlugin)
+            .add_plugin(bevy_stl::StlPlugin);
     }
 }
