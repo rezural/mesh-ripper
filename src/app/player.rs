@@ -1,5 +1,6 @@
 use std::path::Path;
 
+use super::inspector::vec_as_dropdown::VecAsDropdown;
 use super::resources::load_manager::LoadManager;
 use super::resources::mesh_pool::MeshPool;
 use super::GameState;
@@ -30,7 +31,10 @@ impl Plugin for PlayerPlugin {
                 .with_system(check_for_reload.system())
                 .with_system(cursor_grab_system.system()),
         )
-        .add_system_set(SystemSet::on_exit(GameState::Playing).with_system(remove_player.system()));
+        .add_system_set(SystemSet::on_exit(GameState::Playing).with_system(remove_player.system()))
+        .add_system_set(
+            SystemSet::on_update(GameState::Playing).with_system(check_mesh_assets.system()),
+        );
     }
 }
 
@@ -161,58 +165,66 @@ fn move_player(
     }
 }
 
-// FIXME: use LoadManager
 fn check_for_reload(
     mut actions: ResMut<Actions>,
-    fluid_assets: ResMut<MeshAssets>,
     config: Res<AppOptions>,
-    asset_server: ResMut<AssetServer>,
+    mut load_manager: ResMut<LoadManager>,
 ) {
     if !actions.reload {
         return;
     }
 
-    add_extra_files_to_load(config, fluid_assets, asset_server);
-    actions.reload = false;
-}
-
-// FIXME: use LoadManager
-fn add_extra_files_to_load(
-    config: Res<AppOptions>,
-    mut fluid_assets: ResMut<MeshAssets>,
-    asset_server: ResMut<AssetServer>,
-) {
     let glob = config.file_glob.as_str();
 
-    let fluid_files: Vec<String> = glob::glob(glob)
+    let new_assets: Vec<String> = glob::glob(glob)
         .expect("Loading fluid from assets failed in glob")
         .map(|entry| entry.unwrap().to_string_lossy().to_string())
         .collect();
 
-    let not_already_loading = fluid_files.iter().filter(|&file_name| {
-        !fluid_assets
-            .loading
-            .iter()
-            .any(|(loaded_name, _)| file_name == loaded_name)
-    });
+    load_manager.add_new_assets(new_assets);
+    actions.load_number_of_frames = VecAsDropdown::new_with_selected(
+        load_manager.load_iterator.get_lods(),
+        actions.load_number_of_frames.selected_index(),
+    );
 
-    let fluids_to_load = not_already_loading.filter(|&file_name| {
-        !fluid_assets
-            .loaded
-            .iter()
-            .any(|(loaded_name, _)| file_name == loaded_name)
-    });
+    actions.reload = false;
+}
 
-    let fluids_to_load: Vec<(String, HandleUntyped)> = fluids_to_load
-        .map(|fluid_file| {
-            (
-                fluid_file.clone(),
-                asset_server.load_untyped(Path::new(&fluid_file).strip_prefix("assets/").unwrap()),
-            )
-        })
-        .collect();
+fn check_mesh_assets(
+    commands: Commands,
+    time: Res<Time>,
+    mut actions: ResMut<Actions>,
+    mut fluids: ResMut<MeshAssets>,
+    mut load_manager: ResMut<LoadManager>,
+    asset_server: Res<AssetServer>,
+    mut pool: ResMut<MeshPool>,
+    mut materials: ResMut<Assets<StandardMaterial>>,
+) {
+    load_manager.update_load_state(&asset_server);
 
-    fluid_assets.loading.extend(fluids_to_load);
+    fluids.loaded = load_manager.loaded.clone();
+    fluids
+        .loaded
+        .sort_by(|(a, _), (b, _)| alphanumeric_sort::compare_str(a.as_str(), b.as_str()));
+
+    fluids.loading = load_manager.loading.clone();
+
+    if load_manager.loaded.len() > 0 {
+        let material = materials.get_handle(fluids.material.id);
+        let material = materials.get_mut(material.clone());
+
+        if let Some(material) = material {
+            material.base_color = actions.fluid_color;
+            material.base_color.set_a(actions.opacity);
+            material.double_sided = true;
+            let material = materials.get_handle(fluids.material.id);
+            pool.update_fluid(commands, (*fluids).clone(), material, time.delta());
+        }
+    }
+    actions.fluids_loaded = fluids.loaded.len();
+    actions.fluids_loaded_percent = (fluids.loaded.len().max(1) as f32
+        / (fluids.loaded.len() + load_manager.loading.len()) as f32)
+        * 100.;
 }
 
 fn remove_player(

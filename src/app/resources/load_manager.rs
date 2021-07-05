@@ -17,7 +17,8 @@ pub struct LoadManager {
 }
 
 impl LoadManager {
-    pub fn new(load_iterator: MidpointIterator<String>) -> Self {
+    pub fn new(mut load_iterator: MidpointIterator<String>) -> Self {
+        load_iterator.sort();
         Self {
             load_iterator,
             loaded: Vec::new(),
@@ -40,7 +41,21 @@ impl LoadManager {
             })
             .collect();
         self.loading.extend(to_load);
-        // println!("load_assets: loading len: {}", self.loading.len());
+        println!("load_assets: loading len: {}", self.loading.len());
+    }
+
+    pub fn add_new_assets(
+        &mut self,
+        new_assets: Vec<String>,
+    ) {
+        for new_asset in new_assets {
+            if !self.load_iterator.contains(new_asset.clone()) {
+                self.load_iterator.push(new_asset.clone());
+            }
+        }
+        self.sort();
+        self.load_iterator.clear_indices();
+        self.load_iterator.initialize();
     }
 
     pub fn update_load_state(
@@ -92,6 +107,10 @@ impl LoadManager {
 
     pub fn fully_loaded(&self) -> bool {
         self.loading.len() == 0
+    }
+
+    fn sort(&mut self) {
+        self.load_iterator.sort();
     }
 
     fn in_loaded_or_loading(

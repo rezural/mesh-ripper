@@ -9,7 +9,7 @@
 // let lod_2 = lod_1.next_lod();
 // assert_eq!(lod_1.len(), 19 + 18);
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct MidpointIterator<T>
 where
     T: Clone,
@@ -17,33 +17,53 @@ where
     inner: Vec<T>,
     indices: Vec<usize>,
     current_index: usize,
+    first_lod: usize,
 }
 
 impl<T> MidpointIterator<T>
 where
-    T: Clone,
+    T: Clone + PartialEq + AsRef<str>,
 {
     pub fn new(
         inner: Vec<T>,
         first_lod: usize,
     ) -> Self {
-        let step_size =
-            (inner.len() as f32 / (first_lod as f32 - 1.).min(inner.len() as f32).round()) as usize;
+        let mut me = Self {
+            inner,
+            indices: Vec::new(),
+            current_index: 0,
+            first_lod,
+        };
+        me.initialize();
+        me
+    }
+
+    pub fn clear_indices(&mut self) {
+        self.indices.clear();
+    }
+
+    pub fn initialize(&mut self) {
+        let step_size = (self.inner.len() as f32
+            / (self.first_lod as f32 - 1.)
+                .min(self.inner.len() as f32)
+                .round()) as usize;
         let step_size = step_size.max(1);
-        let mut indices: Vec<usize> = inner
+        let mut indices: Vec<usize> = self
+            .inner
             .iter()
             .step_by(step_size)
             .enumerate()
             .map(|(i, _)| i * step_size)
             .collect();
-        if let None = indices.iter().find(|&i| *i == inner.len() - 1) {
-            indices.push(inner.len() - 1);
+        if let None = indices.iter().find(|&i| *i == self.inner.len() - 1) {
+            indices.push(self.inner.len() - 1);
         }
-        Self {
-            inner,
-            indices,
-            current_index: 0,
-        }
+        self.indices = indices;
+    }
+
+    pub fn reinitialize(&mut self) {
+        self.clear_indices();
+        self.initialize();
     }
 
     pub fn next_lod_from_midpoint_iterator(
@@ -67,16 +87,19 @@ where
             })
             .collect();
 
-        let new_index = *from.indices().get(from.current_index).unwrap();
-        let new_index = new_indices
-            .iter()
-            .position(|&idx| new_index == idx)
-            .unwrap();
+        let mut new_index = 0;
+        if let Some(found_index) = from.indices().get(from.current_index) {
+            new_index = new_indices
+                .iter()
+                .position(|&idx| *found_index == idx)
+                .unwrap();
+        }
 
         Some(MidpointIterator {
             inner: from.inner.clone(),
             indices: new_indices,
             current_index: new_index,
+            first_lod: from.first_lod,
         })
     }
 
@@ -115,6 +138,28 @@ where
     pub fn len(&self) -> usize {
         self.indices().len()
     }
+
+    pub fn current_index(&self) -> usize {
+        self.current_index
+    }
+
+    pub fn push(
+        &mut self,
+        item: T,
+    ) {
+        self.inner.push(item)
+    }
+
+    pub fn contains(
+        &self,
+        item: T,
+    ) -> bool {
+        self.inner.iter().any(|f| f == &item)
+    }
+
+    pub fn sort(&mut self) {
+        alphanumeric_sort::sort_str_slice(&mut self.inner);
+    }
 }
 
 impl<T> Iterator for MidpointIterator<T>
@@ -143,7 +188,7 @@ mod tests {
 
     #[test]
     fn test_three() {
-        let three = vec![1, 2, 3];
+        let three = vec!["a", "b", "c"];
         let mpi = MidpointIterator::new(three, 2);
 
         assert_eq!(mpi.len(), 2);
@@ -159,7 +204,7 @@ mod tests {
 
     #[test]
     fn test_one_hundred() {
-        let hundred = [0; 100];
+        let hundred = ["a"; 100];
         let mpi = MidpointIterator::new(hundred.into(), 10);
 
         assert_eq!(mpi.len(), 10);
@@ -185,7 +230,7 @@ mod tests {
 
     #[test]
     fn test_one_thousand() {
-        let hundred = [0; 1000];
+        let hundred = ["a"; 1000];
         let mpi = MidpointIterator::new(hundred.into(), 10);
         assert_eq!(mpi.len(), 10);
 
@@ -210,5 +255,24 @@ mod tests {
         let mpi = mpi.next_lod().unwrap();
         // println!("{:?}", mpi.indices());
         assert_eq!(mpi.len(), 1000);
+    }
+
+    #[test]
+    fn test_initial_lod_greater_than_available() {
+        let ten = ["a"; 10];
+        let mpi = MidpointIterator::new(ten.into(), 20);
+        assert_eq!(mpi.len(), 10);
+
+        assert_eq!(None, mpi.next_lod());
+    }
+
+    #[test]
+    fn test_adding_new_elements_and_initialize_works() {
+        let ten = ["a"; 10];
+        let more = ["a"; 10];
+        let mut mpi = MidpointIterator::new(ten.into(), 20);
+        mpi.push("b");
+        mpi.reinitialize();
+        assert_eq!(mpi.len(), 11);
     }
 }

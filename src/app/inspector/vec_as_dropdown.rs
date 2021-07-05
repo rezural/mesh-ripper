@@ -15,15 +15,23 @@ impl<T> VecAsDropdown<T>
 where
     T: Clone + Display + PartialEq,
 {
-    pub fn new(from_vec: Vec<T>) -> Self {
-        Self {
-            from: from_vec,
-            selected: 0,
-        }
+    pub fn new(from: Vec<T>) -> Self {
+        Self::new_with_selected(from, 0)
+    }
+
+    pub fn new_with_selected(
+        from: Vec<T>,
+        selected: usize,
+    ) -> Self {
+        Self { from, selected }
     }
 
     pub fn selected_value(&self) -> T {
         self.from[self.selected].clone()
+    }
+
+    pub fn selected_index(&self) -> usize {
+        self.selected
     }
 }
 

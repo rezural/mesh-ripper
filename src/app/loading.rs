@@ -33,10 +33,12 @@ impl Plugin for LoadingPlugin {
                 .with_system(load_mesh_assets.system().label("load_mesh_assets"))
                 .with_system(load_assets.system().after("load_mesh_assets")),
         )
-        .add_system_set(SystemSet::on_update(GameState::Loading).with_system(check_assets.system()))
         .add_system_set(
-            SystemSet::on_update(GameState::Playing).with_system(check_mesh_assets.system()),
+            SystemSet::on_update(GameState::Loading).with_system(check_assets.system()),
         );
+        // .add_system_set(
+        //     SystemSet::on_update(GameState::Playing).with_system(check_mesh_assets.system()),
+        // );
     }
 }
 
@@ -74,13 +76,10 @@ fn register_initial_resources(
     // load files
     let glob = config.file_glob.as_str();
 
-    let mut fluid_files: Vec<String> = glob::glob(glob)
+    let fluid_files: Vec<String> = glob::glob(glob)
         .expect("Loading fluid from assets failed in glob")
         .map(|entry| entry.unwrap().to_string_lossy().to_string())
         .collect();
-
-    //FIXME: sorting should be done in the load_manager
-    alphanumeric_sort::sort_str_slice(fluid_files.as_mut());
 
     let fluid_files: MidpointIterator<String> = MidpointIterator::new(fluid_files, config.load_max);
 
@@ -120,43 +119,6 @@ fn load_mesh_assets(
     asset_server: Res<AssetServer>,
 ) {
     load_manager.load_assets(&asset_server);
-}
-
-fn check_mesh_assets(
-    commands: Commands,
-    time: Res<Time>,
-    mut actions: ResMut<Actions>,
-    mut fluids: ResMut<MeshAssets>,
-    mut load_manager: ResMut<LoadManager>,
-    asset_server: Res<AssetServer>,
-    mut pool: ResMut<MeshPool>,
-    mut materials: ResMut<Assets<StandardMaterial>>,
-) {
-    load_manager.update_load_state(&asset_server);
-
-    fluids.loaded = load_manager.loaded.clone();
-    fluids
-        .loaded
-        .sort_by(|(a, _), (b, _)| alphanumeric_sort::compare_str(a.as_str(), b.as_str()));
-
-    fluids.loading = load_manager.loading.clone();
-
-    if load_manager.loaded.len() > 0 {
-        let material = materials.get_handle(fluids.material.id);
-        let material = materials.get_mut(material.clone());
-
-        if let Some(material) = material {
-            material.base_color = actions.fluid_color;
-            material.base_color.set_a(actions.opacity);
-            material.double_sided = true;
-            let material = materials.get_handle(fluids.material.id);
-            pool.update_fluid(commands, (*fluids).clone(), material, time.delta());
-        }
-    }
-    actions.fluids_loaded = fluids.loaded.len();
-    actions.fluids_loaded_percent = (fluids.loaded.len().max(1) as f32
-        / (fluids.loaded.len() + load_manager.loading.len()) as f32)
-        * 100.;
 }
 
 fn load_assets(
