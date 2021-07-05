@@ -3,7 +3,7 @@ use bevy::{
     asset::LoadState,
     prelude::{AssetServer, Handle, HandleUntyped, Mesh},
 };
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 type VecAssetLoading = Vec<(String, HandleUntyped)>;
 type VecAssetLoaded = Vec<(String, Handle<Mesh>)>;
@@ -41,7 +41,15 @@ impl LoadManager {
             })
             .collect();
         self.loading.extend(to_load);
-        println!("load_assets: loading len: {}", self.loading.len());
+    }
+
+    //TODO: pass the asset_manager here and unload files before clearing
+    pub fn clear(&mut self) {
+        self.load_iterator.clear();
+
+        // unload from asset manager here
+        self.loaded.clear();
+        self.loading.clear();
     }
 
     pub fn add_new_assets(
@@ -107,6 +115,10 @@ impl LoadManager {
 
     pub fn fully_loaded(&self) -> bool {
         self.loading.len() == 0
+    }
+
+    pub fn data_path(&self) -> String {
+        String::from("assets/data")
     }
 
     fn sort(&mut self) {

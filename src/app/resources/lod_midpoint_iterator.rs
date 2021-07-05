@@ -42,6 +42,11 @@ where
         self.indices.clear();
     }
 
+    pub fn clear(&mut self) {
+        self.clear_indices();
+        self.inner.clear();
+    }
+
     pub fn initialize(&mut self) {
         let step_size = (self.inner.len() as f32
             / (self.first_lod as f32 - 1.)
@@ -56,7 +61,9 @@ where
             .map(|(i, _)| i * step_size)
             .collect();
         if let None = indices.iter().find(|&i| *i == self.inner.len() - 1) {
-            indices.push(self.inner.len() - 1);
+            if self.inner.len() > 0 {
+                indices.push(self.inner.len() - 1);
+            }
         }
         self.indices = indices;
     }
@@ -106,15 +113,17 @@ where
     pub fn get_lods(&self) -> Vec<usize> {
         let mut current_lod = Some(self.clone());
         let mut lods = Vec::new();
-        lods.push(self.len());
-        let mut have_lod = true;
-        while have_lod {
-            let next_lod = current_lod.clone().unwrap().next_lod();
-            if let Some(next_lod) = next_lod {
-                lods.push(next_lod.len());
-                current_lod = Some(next_lod);
-            } else {
-                have_lod = false;
+        if self.len() > 0 {
+            lods.push(self.len());
+            let mut have_lod = true;
+            while have_lod {
+                let next_lod = current_lod.clone().unwrap().next_lod();
+                if let Some(next_lod) = next_lod {
+                    lods.push(next_lod.len());
+                    current_lod = Some(next_lod);
+                } else {
+                    have_lod = false;
+                }
             }
         }
         lods
@@ -185,6 +194,14 @@ where
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn test_zero_length() {
+        let zero: Vec<String> = Vec::new();
+        let mpi = MidpointIterator::new(zero, 2);
+        assert_eq!(mpi.len(), 0);
+        assert_eq!(mpi.get_lods().len(), 0);
+    }
 
     #[test]
     fn test_three() {

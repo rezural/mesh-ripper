@@ -30,7 +30,10 @@ enum GameState {
 #[derive(StructOpt, Debug)]
 #[structopt(name = "Options")]
 pub struct AppOptions {
-    file_glob: String,
+    #[structopt(short, long)]
+    file_glob: Option<String>,
+    #[structopt(short, long, default_value = "assets/data")]
+    dataset_dir: String,
     #[structopt(short, long, default_value = "100")]
     load_max: usize,
 }
@@ -51,8 +54,6 @@ impl Plugin for GamePlugin {
             // .add_plugin(FrameTimeDiagnosticsPlugin::default())
             // .add_plugin(LogDiagnosticsPlugin::default())
             ;
-        app
-            .add_plugin(ObjPlugin)
-            .add_plugin(bevy_stl::StlPlugin);
+        app.add_plugin(ObjPlugin).add_plugin(bevy_stl::StlPlugin);
     }
 }

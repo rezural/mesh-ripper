@@ -1,12 +1,12 @@
 mod paths;
 
-use super::resources::mesh_pool::MeshPool;
 use super::GameState;
 use super::{
     actions::Actions, loading::paths::PATHS, resources::lod_midpoint_iterator::MidpointIterator,
     AppOptions,
 };
 use crate::app::inspector::vec_as_dropdown::VecAsDropdown;
+use crate::app::resources::glob_or_dir_loader::GlobOrDirLoader;
 use crate::app::resources::load_manager::LoadManager;
 use bevy::asset::LoadState;
 use bevy::prelude::*;
@@ -72,19 +72,21 @@ fn register_initial_resources(
     config: Res<AppOptions>,
     mut materials: ResMut<Assets<StandardMaterial>>,
     mut state: ResMut<State<GameState>>,
+    asset_server: Res<AssetServer>,
 ) {
     // load files
-    let glob = config.file_glob.as_str();
+    let load_files: Vec<String> = Vec::new();
+    let load_iterator = MidpointIterator::new(load_files, config.load_max);
+    let load_manager = LoadManager::new(load_iterator);
+    let mut glob_or_dir_loader = GlobOrDirLoader::new(
+        load_manager,
+        config.file_glob.clone(),
+        config.dataset_dir.clone(),
+    );
 
-    let fluid_files: Vec<String> = glob::glob(glob)
-        .expect("Loading fluid from assets failed in glob")
-        .map(|entry| entry.unwrap().to_string_lossy().to_string())
-        .collect();
+    glob_or_dir_loader.update(config.file_glob.clone(), None, &asset_server);
 
-    let fluid_files: MidpointIterator<String> = MidpointIterator::new(fluid_files, config.load_max);
-
-    let load_manager = LoadManager::new(fluid_files.clone());
-    commands.insert_resource(load_manager.clone());
+    commands.insert_resource(glob_or_dir_loader.clone());
 
     // set the water color
     let water_colour = Actions::default().fluid_color;
@@ -96,9 +98,17 @@ fn register_initial_resources(
         water_material.roughness = 0.1;
     }
 
-    // get file_glob lods
+    let load_manager = glob_or_dir_loader.load_manager();
     let mut actions = Actions::default();
     actions.load_number_of_frames = VecAsDropdown::new(load_manager.load_iterator.get_lods());
+
+    let mut dataset_dirs: Vec<String> = vec![String::from("Choose Datadir")];
+    if let Some(entries) = glob_or_dir_loader.dirs_from_load_dir() {
+        dataset_dirs.extend(entries);
+    }
+
+    actions.datasets = VecAsDropdown::new(dataset_dirs);
+
     commands.insert_resource(actions);
 
     commands.insert_resource(MeshAssets {
@@ -107,18 +117,16 @@ fn register_initial_resources(
         material: material,
     });
 
-    // FIXME: this should probably take a ref
-    // let app_state = AppState::new(load_manager.load_iterator.clone());
-    // commands.insert_resource(app_state);
-
     state.set(GameState::Loading).unwrap();
 }
 
 fn load_mesh_assets(
-    mut load_manager: ResMut<LoadManager>,
+    mut glob_or_dir_loader: ResMut<GlobOrDirLoader>,
     asset_server: Res<AssetServer>,
 ) {
-    load_manager.load_assets(&asset_server);
+    glob_or_dir_loader
+        .load_manager_mut()
+        .load_assets(&asset_server);
 }
 
 fn load_assets(

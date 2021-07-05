@@ -1,6 +1,5 @@
-use std::path::Path;
-
 use super::inspector::vec_as_dropdown::VecAsDropdown;
+use super::resources::glob_or_dir_loader::GlobOrDirLoader;
 use super::resources::load_manager::LoadManager;
 use super::resources::mesh_pool::MeshPool;
 use super::GameState;
@@ -132,7 +131,8 @@ fn move_player(
     mut pool: ResMut<MeshPool>,
     mut materials: ResMut<Assets<StandardMaterial>>,
     asset_server: Res<AssetServer>,
-    mut load_manager: ResMut<LoadManager>,
+    mut glob_or_dir_loader: ResMut<GlobOrDirLoader>,
+    config: Res<AppOptions>,
 ) {
     pool.advance_every = actions.advance_every;
     pool.frame_direction = actions.frame_direction.clone();
@@ -144,13 +144,27 @@ fn move_player(
     }
     pool.num_fluids = fluid_assets.loaded.len();
 
+    let load_manager = glob_or_dir_loader.load_manager_mut();
     // if the user has chosen a higer asset load lod
     let wanted_lod_len = actions.load_number_of_frames.selected_value();
-    if wanted_lod_len > (load_manager.loaded.len() + load_manager.loading.len())
-        && load_manager.fully_loaded()
-    {
-        load_manager.next_lod_and_reload(&asset_server);
-        fluid_assets.loading = load_manager.loading.clone();
+    if let Some(wanted_lod_len) = wanted_lod_len {
+        if wanted_lod_len > (load_manager.loaded.len() + load_manager.loading.len())
+            && load_manager.fully_loaded()
+        {
+            load_manager.next_lod_and_reload(&asset_server);
+            fluid_assets.loading = load_manager.loading.clone();
+        }
+    }
+
+    // if the user has chosen a different data dir
+    if actions.datasets.changed() {
+        println!("changed: {:?}", actions.datasets.selected_value());
+
+        glob_or_dir_loader.update(
+            config.file_glob.clone(),
+            actions.datasets.selected_value(),
+            &asset_server,
+        )
     }
 
     let material = materials.get_handle(fluid_assets.material.id);
@@ -168,24 +182,26 @@ fn move_player(
 fn check_for_reload(
     mut actions: ResMut<Actions>,
     config: Res<AppOptions>,
-    mut load_manager: ResMut<LoadManager>,
+    mut glob_or_dir_loader: ResMut<GlobOrDirLoader>,
 ) {
     if !actions.reload {
         return;
     }
 
-    let glob = config.file_glob.as_str();
+    if let Some(glob) = config.file_glob.clone() {
+        let new_assets: Vec<String> = glob::glob(glob.as_str())
+            .expect("Loading fluid from assets failed in glob")
+            .map(|entry| entry.unwrap().to_string_lossy().to_string())
+            .collect();
 
-    let new_assets: Vec<String> = glob::glob(glob)
-        .expect("Loading fluid from assets failed in glob")
-        .map(|entry| entry.unwrap().to_string_lossy().to_string())
-        .collect();
+        let load_manager = glob_or_dir_loader.load_manager_mut();
 
-    load_manager.add_new_assets(new_assets);
-    actions.load_number_of_frames = VecAsDropdown::new_with_selected(
-        load_manager.load_iterator.get_lods(),
-        actions.load_number_of_frames.selected_index(),
-    );
+        load_manager.add_new_assets(new_assets);
+        actions.load_number_of_frames = VecAsDropdown::new_with_selected(
+            load_manager.load_iterator.get_lods(),
+            actions.load_number_of_frames.selected_index(),
+        );
+    }
 
     actions.reload = false;
 }
@@ -195,11 +211,12 @@ fn check_mesh_assets(
     time: Res<Time>,
     mut actions: ResMut<Actions>,
     mut fluids: ResMut<MeshAssets>,
-    mut load_manager: ResMut<LoadManager>,
     asset_server: Res<AssetServer>,
     mut pool: ResMut<MeshPool>,
     mut materials: ResMut<Assets<StandardMaterial>>,
+    mut glob_or_dir_loader: ResMut<GlobOrDirLoader>,
 ) {
+    let load_manager = glob_or_dir_loader.load_manager_mut();
     load_manager.update_load_state(&asset_server);
 
     fluids.loaded = load_manager.loaded.clone();
