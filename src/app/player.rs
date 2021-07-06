@@ -1,6 +1,5 @@
 use super::inspector::vec_as_dropdown::VecAsDropdown;
 use super::resources::glob_or_dir_loader::GlobOrDirLoader;
-use super::resources::load_manager::LoadManager;
 use super::resources::mesh_pool::MeshPool;
 use super::GameState;
 use super::{actions::Actions, loading::MeshAssets, AppOptions};
@@ -67,7 +66,7 @@ fn spawn_camera(
     mut ambient_light: ResMut<AmbientLight>,
 ) {
     ambient_light.color = Color::WHITE;
-    ambient_light.brightness = 0.8;
+    ambient_light.brightness = 100.;
 
     // let lights = [
     //     Vec3::new(200.0, 200.0, 200.0),
@@ -175,7 +174,10 @@ fn move_player(
         material.base_color.set_a(actions.opacity);
         material.double_sided = true;
         let material = materials.get_handle(fluid_assets.material.id);
-        pool.update_fluid(commands, (*fluid_assets).clone(), material, time.delta());
+        pool.update_fluid(commands, &fluid_assets, material, time.delta());
+        if let Some(current_mesh) = pool.current_mesh(&fluid_assets) {
+            actions.current_file = current_mesh.0.clone();
+        }
     }
 }
 
@@ -210,7 +212,7 @@ fn check_mesh_assets(
     commands: Commands,
     time: Res<Time>,
     mut actions: ResMut<Actions>,
-    mut fluids: ResMut<MeshAssets>,
+    mut fluid_assets: ResMut<MeshAssets>,
     asset_server: Res<AssetServer>,
     mut pool: ResMut<MeshPool>,
     mut materials: ResMut<Assets<StandardMaterial>>,
@@ -219,28 +221,31 @@ fn check_mesh_assets(
     let load_manager = glob_or_dir_loader.load_manager_mut();
     load_manager.update_load_state(&asset_server);
 
-    fluids.loaded = load_manager.loaded.clone();
-    fluids
+    fluid_assets.loaded = load_manager.loaded.clone();
+    fluid_assets
         .loaded
         .sort_by(|(a, _), (b, _)| alphanumeric_sort::compare_str(a.as_str(), b.as_str()));
 
-    fluids.loading = load_manager.loading.clone();
+    fluid_assets.loading = load_manager.loading.clone();
 
     if load_manager.loaded.len() > 0 {
-        let material = materials.get_handle(fluids.material.id);
+        let material = materials.get_handle(fluid_assets.material.id);
         let material = materials.get_mut(material.clone());
 
         if let Some(material) = material {
             material.base_color = actions.fluid_color;
             material.base_color.set_a(actions.opacity);
             material.double_sided = true;
-            let material = materials.get_handle(fluids.material.id);
-            pool.update_fluid(commands, (*fluids).clone(), material, time.delta());
+            let material = materials.get_handle(fluid_assets.material.id);
+            pool.update_fluid(commands, &fluid_assets, material, time.delta());
+            if let Some(current_mesh) = pool.current_mesh(&fluid_assets) {
+                actions.current_file = current_mesh.0.clone();
+            }
         }
     }
-    actions.fluids_loaded = fluids.loaded.len();
-    actions.fluids_loaded_percent = (fluids.loaded.len().max(1) as f32
-        / (fluids.loaded.len() + load_manager.loading.len()) as f32)
+    actions.fluids_loaded = fluid_assets.loaded.len();
+    actions.fluids_loaded_percent = (fluid_assets.loaded.len().max(1) as f32
+        / (fluid_assets.loaded.len() + load_manager.loading.len()) as f32)
         * 100.;
 }
 

@@ -40,7 +40,7 @@ impl MeshPool {
     }
 
     fn advance(&mut self) {
-        assert!(self.num_fluids != 0);
+        // assert!(self.num_fluids != 0);
         self.current_fluid_index = (self.current_fluid_index + 1) % self.num_fluids;
     }
 
@@ -80,10 +80,17 @@ impl MeshPool {
         self.currently_advanced + delta > self.advance_every
     }
 
+    pub fn current_mesh<'a>(
+        &self,
+        fluids: &'a MeshAssets,
+    ) -> Option<&'a (String, Handle<Mesh>)> {
+        fluids.loaded.get(self.current_fluid_index)
+    }
+
     pub fn update_fluid(
         &mut self,
         mut commands: Commands,
-        fluids: MeshAssets,
+        fluids: &MeshAssets,
         water_material: Handle<StandardMaterial>,
         delta: Duration,
     ) {
@@ -93,33 +100,34 @@ impl MeshPool {
         }
 
         self.currently_advanced = Duration::default();
-        self.move_in_frame_direction();
 
         if self.current_fluid_entity.is_some() {
             let mut current_entity = commands.entity(self.current_fluid_entity.unwrap());
             current_entity.despawn_recursive();
         }
 
+        self.move_in_frame_direction();
+
         if fluids.loaded.len() > 0 {
             self.have_displayed = true;
 
-            let new_fluid = fluids.loaded.get(self.current_fluid_index).unwrap().clone();
-
-            let entity = commands
-                .spawn()
-                .insert_bundle(PbrBundle {
-                    mesh: new_fluid.1.clone(),
-                    material: water_material.clone(),
-                    transform: Transform {
-                        scale: Vec3::new(4., 4., 4.),
+            if let Some(new_fluid) = self.current_mesh(fluids) {
+                let entity = commands
+                    .spawn()
+                    .insert_bundle(PbrBundle {
+                        mesh: new_fluid.1.clone(),
+                        material: water_material.clone(),
+                        // transform: Transform {
+                        //     scale: Vec3::new(1., 4., 4.),
+                        //     ..Default::default()
+                        // },
                         ..Default::default()
-                    },
-                    ..Default::default()
-                })
-                .id();
+                    })
+                    .id();
 
-            self.current_mesh_handle = Some(new_fluid.1);
-            self.current_fluid_entity = Some(entity);
+                self.current_mesh_handle = Some(new_fluid.1.clone());
+                self.current_fluid_entity = Some(entity);
+            }
         }
     }
 
