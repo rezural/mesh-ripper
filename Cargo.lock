@@ -498,6 +498,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "bevy_gizmos"
+version = "0.5.0"
+source = "git+https://github.com/rezural/bevy_gizmos.git?branch=main#cfde24dc51acc09eef85e80cdc65265a565adbc5"
+dependencies = [
+ "bevy",
+ "crossbeam",
+ "smallvec",
+]
+
+[[package]]
 name = "bevy_gltf"
 version = "0.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2426,6 +2436,7 @@ dependencies = [
  "bevy",
  "bevy-inspector-egui",
  "bevy_fly_camera",
+ "bevy_gizmos",
  "bevy_kira_audio",
  "bevy_obj",
  "bevy_stl",

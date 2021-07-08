@@ -44,6 +44,7 @@ bevy-inspector-egui = "0.5.1"
 bevy_obj = { git = "https://github.com/rezural/bevy_obj.git", branch = "create-normals-and-uv-data" }
 bevy_kira_audio = { version = "0.4.0" } 
 bevy_stl = "0.3.0"
+bevy_gizmos  = { git = "https://github.com/rezural/bevy_gizmos.git", branch = "main" }
 
 [build-dependencies]
 embed-resource = "1.6.3"

@@ -14,6 +14,7 @@ use player::PlayerPlugin;
 use bevy::app::AppBuilder;
 // use bevy::diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin};
 use bevy::prelude::*;
+use bevy_gizmos::{Axis, *};
 use bevy_inspector_egui::InspectorPlugin;
 use bevy_obj::*;
 
@@ -51,9 +52,28 @@ impl Plugin for GamePlugin {
             .add_plugin(MenuPlugin)
             .add_plugin(PlayerPlugin)
             .add_plugin(InspectorPlugin::<Actions>::new())
+            .add_plugin(GizmosPlugin)
             // .add_plugin(FrameTimeDiagnosticsPlugin::default())
             // .add_plugin(LogDiagnosticsPlugin::default())
             ;
         app.add_plugin(ObjPlugin).add_plugin(bevy_stl::StlPlugin);
+        app.add_system(persistent_gizmos.system());
+    }
+}
+
+fn persistent_gizmos(
+    mut commands: Commands,
+    actions: ResMut<Actions>,
+) {
+    if actions.show_axis {
+        commands.spawn().insert_bundle(GizmoBundle {
+            transform: Transform::from_xyz(-4.0, 1.5, 0.0),
+            gizmo: Gizmo {
+                shape: GizmoShape::Empty { radius: 400.0 },
+                wireframe: Color::rgba(1.0, 1.0, 0.0, 1.0),
+                color: Color::rgba(0.6, 0.8, 0.2, 0.2),
+            },
+            ..Default::default()
+        });
     }
 }
