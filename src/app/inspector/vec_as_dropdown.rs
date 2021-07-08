@@ -8,10 +8,10 @@ use std::{
     ops::BitXor,
 };
 
-// #[derive(Default)]
+#[derive(Debug)]
 pub struct VecAsDropdown<T>
 where
-    T: Clone + Display + PartialEq,
+    T: Clone + Display + PartialEq + Debug,
 {
     from: Vec<T>,
     selected: usize,
@@ -20,7 +20,7 @@ where
 
 impl<T> VecAsDropdown<T>
 where
-    T: Clone + Display + PartialEq + Default,
+    T: Clone + Display + PartialEq + Default + Debug,
 {
     pub fn new(from: Vec<T>) -> Self {
         Self::new_with_selected(from, 0)
@@ -56,7 +56,7 @@ where
 
 impl<T> Default for VecAsDropdown<T>
 where
-    T: Clone + Display + PartialEq,
+    T: Clone + Display + PartialEq + Debug,
 {
     fn default() -> Self {
         Self {
