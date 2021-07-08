@@ -30,7 +30,7 @@ impl Default for FrameDirection {
     }
 }
 
-#[derive(Inspectable)]
+#[derive(Inspectable, Debug)]
 pub struct Actions {
     pub frame_direction: FrameDirection,
     pub advance_every: Duration,
@@ -47,6 +47,7 @@ pub struct Actions {
     #[inspectable(label = "Load from Dataset")]
     pub datasets: VecAsDropdown<String>,
     pub current_file: String,
+    pub show_axis: bool,
 }
 
 impl Default for Actions {
@@ -65,6 +66,7 @@ impl Default for Actions {
             load_number_of_frames: VecAsDropdown::default(),
             datasets: VecAsDropdown::default(),
             current_file: String::from(""),
+            show_axis: false,
         }
     }
 }
