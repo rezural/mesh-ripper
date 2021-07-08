@@ -21,7 +21,8 @@ impl Plugin for PlayerPlugin {
         app.add_system_set(
             SystemSet::on_enter(GameState::Playing)
                 .with_system(spawn_camera.system())
-                .with_system(spawn_world.system()),
+                .with_system(spawn_world.system())
+                .with_system(disable_cursor_on_start.system()),
         )
         .add_system_set(
             SystemSet::on_update(GameState::Playing)
@@ -33,6 +34,18 @@ impl Plugin for PlayerPlugin {
         .add_system_set(
             SystemSet::on_update(GameState::Playing).with_system(check_mesh_assets.system()),
         );
+    }
+}
+
+fn disable_cursor_on_start(
+    mut windows: ResMut<Windows>,
+    mut query: Query<&mut FlyCamera>,
+) {
+    let window = windows.get_primary_mut().unwrap();
+    for mut camera in query.iter_mut() {
+        window.set_cursor_lock_mode(false);
+        window.set_cursor_visibility(true);
+        camera.enabled = false;
     }
 }
 
