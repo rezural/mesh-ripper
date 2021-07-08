@@ -171,12 +171,15 @@ fn move_player(
     // if the user has chosen a different data dir
     if actions.datasets.changed() {
         println!("changed: {:?}", actions.datasets.selected_value());
+        println!("actions: {:?}", *actions);
 
         glob_or_dir_loader.update(
             config.file_glob.clone(),
             actions.datasets.selected_value(),
             &asset_server,
-        )
+        );
+        let load_manager = glob_or_dir_loader.load_manager();
+        actions.load_number_of_frames = VecAsDropdown::new(load_manager.load_iterator.get_lods());
     }
 
     let material = materials.get_handle(fluid_assets.material.id);
