@@ -68,10 +68,10 @@ where
         self.indices = indices;
     }
 
-    pub fn reinitialize(&mut self) {
-        self.clear_indices();
-        self.initialize();
-    }
+    // pub fn reinitialize(&mut self) {
+    //     self.clear_indices();
+    //     self.initialize();
+    // }
 
     pub fn next_lod_from_midpoint_iterator(
         from: &MidpointIterator<T>
@@ -148,7 +148,7 @@ where
         self.indices().len()
     }
 
-    pub fn current_index(&self) -> usize {
+    pub fn _current_index(&self) -> usize {
         self.current_index
     }
 
@@ -281,13 +281,12 @@ mod tests {
         assert_eq!(None, mpi.next_lod());
     }
 
-    #[test]
-    fn test_adding_new_elements_and_initialize_works() {
-        let ten = ["a"; 10];
-        let more = ["a"; 10];
-        let mut mpi = MidpointIterator::new(ten.into(), 20);
-        mpi.push("b");
-        mpi.reinitialize();
-        assert_eq!(mpi.len(), 11);
-    }
+    // #[test]
+    // fn test_adding_new_elements_and_initialize_works() {
+    //     let ten = ["a"; 10];
+    //     let mut mpi = MidpointIterator::new(ten.into(), 20);
+    //     mpi.push("b");
+    //     mpi.reinitialize();
+    //     assert_eq!(mpi.len(), 11);
+    // }
 }

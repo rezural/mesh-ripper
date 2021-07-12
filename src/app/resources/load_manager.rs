@@ -3,7 +3,7 @@ use bevy::{
     asset::LoadState,
     prelude::{AssetServer, Handle, HandleUntyped, Mesh},
 };
-use std::path::{Path, PathBuf};
+use std::path::Path;
 
 type VecAssetLoading = Vec<(String, HandleUntyped)>;
 type VecAssetLoaded = Vec<(String, Handle<Mesh>)>;
