@@ -41,7 +41,9 @@ impl MeshPool {
 
     fn advance(&mut self) {
         // assert!(self.num_fluids != 0);
-        self.current_fluid_index = (self.current_fluid_index + 1) % self.num_fluids;
+        if self.num_fluids > 0 {
+            self.current_fluid_index = (self.current_fluid_index + 1) % self.num_fluids;
+        }
     }
 
     fn retreat(&mut self) {
