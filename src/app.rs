@@ -39,6 +39,11 @@ pub struct AppOptions {
     load_max: usize,
 }
 
+#[derive(Default)]
+struct State {
+    pub gizmo_entity: Option<Entity>,
+}
+
 pub struct GamePlugin;
 
 impl Plugin for GamePlugin {
@@ -58,22 +63,37 @@ impl Plugin for GamePlugin {
             ;
         app.add_plugin(ObjPlugin).add_plugin(bevy_stl::StlPlugin);
         app.add_system(persistent_gizmos.system());
+        app.add_startup_system(initialize_state.system());
     }
+}
+
+fn initialize_state(mut commands: Commands) {
+    commands.insert_resource(State::default())
 }
 
 fn persistent_gizmos(
     mut commands: Commands,
     actions: ResMut<Actions>,
+    mut state: ResMut<State>,
 ) {
     if actions.show_axis {
-        commands.spawn().insert_bundle(GizmoBundle {
-            transform: Transform::from_xyz(-4.0, 1.5, 0.0),
-            gizmo: Gizmo {
-                shape: GizmoShape::Empty { radius: 400.0 },
-                wireframe: Color::rgba(1.0, 1.0, 0.0, 1.0),
-                color: Color::rgba(0.6, 0.8, 0.2, 0.2),
-            },
-            ..Default::default()
-        });
+        let entity = commands
+            .spawn()
+            .insert_bundle(GizmoBundle {
+                transform: Transform::from_xyz(-4.0, 1.5, 0.0),
+                gizmo: Gizmo {
+                    shape: GizmoShape::Empty { radius: 400.0 },
+                    wireframe: Color::rgba(1.0, 1.0, 0.0, 1.0),
+                    color: Color::rgba(0.6, 0.8, 0.2, 0.0),
+                },
+                ..Default::default()
+            })
+            .id();
+        state.gizmo_entity = Some(entity);
+    } else {
+        if let Some(entity) = state.gizmo_entity {
+            commands.entity(entity).despawn_recursive();
+            state.gizmo_entity = None;
+        }
     }
 }
