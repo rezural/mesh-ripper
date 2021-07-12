@@ -33,8 +33,6 @@ impl GlobOrDirLoader {
         let mut files = Vec::new();
         // load_dir_chosen takes precedence over glob passed via command line
         if let Some(dir_chosen) = load_dir_chosen {
-            println!("dir_chosen {:?}", dir_chosen);
-
             if let Some(new_files) = self.get_files_from_load_dir(dir_chosen) {
                 files.extend(new_files);
             }
@@ -80,17 +78,11 @@ impl GlobOrDirLoader {
         &self,
         chosen: String,
     ) -> Option<Vec<String>> {
-        println!("get_files_from_load_dir");
         if let Some(dirs) = self.dirs_from_load_dir() {
-            println!("get_files_from_load_dir got Some from dirs_from_load_dir");
             if let Some(loading_from) = dirs.iter().find(|&d| *d == chosen) {
-                println!("get_files_from_load_dir got Some find");
-                println!("{}", loading_from);
                 if let Ok(entries) =
                     read_dir(Path::new(self.load_manager().data_path().as_str()).join(loading_from))
                 {
-                    println!("get_files_from_load_dir got entries from read_dir");
-
                     let files: Vec<String> = entries
                         .filter(|e| e.is_ok())
                         .map(|e| e.unwrap().path())

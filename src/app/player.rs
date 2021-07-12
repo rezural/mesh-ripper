@@ -170,9 +170,6 @@ fn move_player(
 
     // if the user has chosen a different data dir
     if actions.datasets.changed() {
-        println!("changed: {:?}", actions.datasets.selected_value());
-        println!("actions: {:?}", *actions);
-
         glob_or_dir_loader.update(
             config.file_glob.clone(),
             actions.datasets.selected_value(),

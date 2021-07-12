@@ -115,8 +115,6 @@ where
     }
 
     fn setup(_: &mut AppBuilder) {
-        // eprintln!("Running setup code...");
-
         // app.init_resource::<WhateverYouNeed>();
     }
 }

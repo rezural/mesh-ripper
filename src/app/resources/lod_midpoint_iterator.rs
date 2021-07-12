@@ -237,7 +237,6 @@ mod tests {
         assert_eq!(mpi.len(), 37 + 36);
 
         let mpi = mpi.next_lod().unwrap();
-        // println!("{:?}", mpi.indices());
         assert_eq!(mpi.len(), 100);
 
         if let Some(_) = mpi.next_lod() {
@@ -270,7 +269,6 @@ mod tests {
         assert_eq!(mpi.len(), 289 + 288);
 
         let mpi = mpi.next_lod().unwrap();
-        // println!("{:?}", mpi.indices());
         assert_eq!(mpi.len(), 1000);
     }
 
