@@ -102,7 +102,7 @@ fn spawn_camera(
 
     let fly_camera = FlyCamera {
         max_speed: 1.,
-        accel: 8.,
+        accel: 2.,
 
         key_down: KeyCode::Q,
         key_up: KeyCode::E,
