@@ -1,3 +1,6 @@
+use std::time::Duration;
+
+use super::actions::State as AppState;
 use super::inspector::vec_as_dropdown::VecAsDropdown;
 use super::resources::glob_or_dir_loader::GlobOrDirLoader;
 use super::resources::mesh_pool::MeshPool;
@@ -27,6 +30,7 @@ impl Plugin for PlayerPlugin {
         .add_system_set(
             SystemSet::on_update(GameState::Playing)
                 .with_system(move_player.system())
+                .with_system(check_lights.system())
                 .with_system(check_for_reload.system())
                 .with_system(cursor_grab_system.system()),
         )
@@ -74,31 +78,55 @@ fn cursor_grab_system(
     }
 }
 
+fn check_lights(
+    mut commands: Commands,
+    mut actions: ResMut<Actions>,
+    mut state: ResMut<AppState>,
+) {
+    if actions.spot_lighting {
+        if let None = state.spot_lights {
+            // state.spot_lights =
+            let lights = [
+                Vec3::new(200.0, 200.0, 200.0),
+                Vec3::new(200.0, 200.0, -200.0),
+                Vec3::new(-200.0, 200.0, -200.0),
+                Vec3::new(-200.0, 200.0, 200.0),
+            ];
+
+            let lights = lights
+                .iter()
+                .map(|light| {
+                    commands
+                        .spawn_bundle(LightBundle {
+                            transform: Transform::from_translation(*light),
+                            light: Light {
+                                intensity: actions.lighting_intensity,
+                                range: 400_000.0,
+                                ..Default::default()
+                            },
+                            ..Default::default()
+                        })
+                        .id()
+                })
+                .collect();
+
+            state.spot_lights = Some(lights);
+        }
+    } else {
+        if let Some(spot_lights) = &state.spot_lights {
+            for &light in spot_lights {
+                commands.entity(light).despawn_recursive();
+            }
+            state.spot_lights = None;
+        }
+    }
+}
 fn spawn_camera(
     mut commands: Commands,
     mut ambient_light: ResMut<AmbientLight>,
 ) {
     ambient_light.color = Color::WHITE;
-    ambient_light.brightness = 100.;
-
-    // let lights = [
-    //     Vec3::new(200.0, 200.0, 200.0),
-    //     Vec3::new(200.0, 200.0, -200.0),
-    //     Vec3::new(-200.0, 200.0, -200.0),
-    //     Vec3::new(-200.0, 200.0, 200.0),
-    // ];
-
-    // for light in lights.iter() {
-    //     commands.spawn_bundle(LightBundle {
-    //         transform: Transform::from_translation(*light),
-    //         light: Light {
-    //             intensity: 10_000.0,
-    //             range: 3_000_000.0,
-    //             ..Default::default()
-    //         },
-    //         ..Default::default()
-    //     });
-    // }
+    ambient_light.brightness = 0.4;
 
     let fly_camera = FlyCamera {
         max_speed: 1.,
@@ -130,7 +158,10 @@ fn spawn_world(
     actions: Res<Actions>,
 ) {
     let fluid_pool_length = fluid_assets.loaded.len();
-    let pool = MeshPool::new(fluid_pool_length, actions.advance_every);
+    let pool = MeshPool::new(
+        fluid_pool_length,
+        Duration::from_secs_f32(actions.advance_every),
+    );
     commands.insert_resource(pool.clone());
 }
 
@@ -146,7 +177,7 @@ fn move_player(
     mut glob_or_dir_loader: ResMut<GlobOrDirLoader>,
     config: Res<AppOptions>,
 ) {
-    pool.advance_every = actions.advance_every;
+    pool.advance_every = Duration::from_secs_f32(actions.advance_every);
     pool.frame_direction = actions.frame_direction.clone();
     pool.paused = actions.paused;
 
@@ -186,6 +217,7 @@ fn move_player(
         material.base_color = actions.fluid_color;
         material.base_color.set_a(actions.opacity);
         material.double_sided = true;
+        material.roughness = 0.6;
         let material = materials.get_handle(fluid_assets.material.id);
         pool.update_fluid(commands, &fluid_assets, material, time.delta());
         if let Some(current_mesh) = pool.current_mesh(&fluid_assets) {

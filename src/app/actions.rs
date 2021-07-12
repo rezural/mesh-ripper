@@ -12,9 +12,10 @@ impl Plugin for ActionsPlugin {
         &self,
         app: &mut AppBuilder,
     ) {
-        app.init_resource::<Actions>().add_system_set(
+        app.add_system_set(
             SystemSet::on_update(GameState::Playing).with_system(set_movement_actions.system()),
         );
+        app.init_resource::<Actions>().init_resource::<State>();
     }
 }
 
@@ -33,7 +34,8 @@ impl Default for FrameDirection {
 #[derive(Inspectable, Debug)]
 pub struct Actions {
     pub frame_direction: FrameDirection,
-    pub advance_every: Duration,
+    #[inspectable(min = 0.0, max = 1.0, speed = 0.01)]
+    pub advance_every: f32,
     pub reset: bool,
     pub paused: bool,
     pub fluids_loaded: usize,
@@ -48,12 +50,17 @@ pub struct Actions {
     pub datasets: VecAsDropdown<String>,
     pub current_file: String,
     pub show_axis: bool,
+    pub spot_lighting: bool,
+    #[inspectable(min = 0.0, max = 10_000_000.0, speed = 100.)]
+    pub lighting_intensity: f32,
+    #[inspectable(min = 0.0, max = 1.0, speed = 0.01)]
+    pub material_roughness: f32,
 }
 
 impl Default for Actions {
     fn default() -> Self {
         Self {
-            advance_every: Duration::from_secs_f32(1. / 10.),
+            advance_every: 0.1,
             // last_time_drawn: Instant::now(),
             paused: true,
             reset: false,
@@ -67,7 +74,21 @@ impl Default for Actions {
             datasets: VecAsDropdown::default(),
             current_file: String::from(""),
             show_axis: false,
+            spot_lighting: false,
+            lighting_intensity: 1000.0,
+            material_roughness: 0.089,
         }
+    }
+}
+
+pub struct State {
+    pub spot_lights: Option<Vec<Entity>>,
+}
+
+impl Default for State {
+    fn default() -> Self {
+        let spot_lights = Some(Vec::new());
+        Self { spot_lights }
     }
 }
 
@@ -96,18 +117,18 @@ fn set_movement_actions(
     }
 
     if keyboard_input.just_pressed(KeyCode::F) {
-        if actions.advance_every.as_millis() > 19 {
-            actions.advance_every -= Duration::from_millis(10);
-        } else if actions.advance_every.as_millis() > 1 {
-            actions.advance_every -= Duration::from_millis(1);
+        if actions.advance_every > 0.019 {
+            actions.advance_every -= 0.1;
+        } else if actions.advance_every > 1.0 {
+            actions.advance_every -= 0.01;
         }
     }
 
     if keyboard_input.just_pressed(KeyCode::G) {
-        if actions.advance_every.as_millis() > 9 {
-            actions.advance_every += Duration::from_millis(10);
+        if actions.advance_every > 0.09 {
+            actions.advance_every += 0.1;
         } else {
-            actions.advance_every += Duration::from_millis(1);
+            actions.advance_every += 0.01;
         }
     }
 }
