@@ -14,9 +14,10 @@ use player::PlayerPlugin;
 use bevy::app::AppBuilder;
 // use bevy::diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin};
 use bevy::prelude::*;
-use bevy_gizmos::{Axis, *};
+use bevy_gizmos::*;
 use bevy_inspector_egui::InspectorPlugin;
 use bevy_obj::*;
+use bevy_ply::*;
 
 use structopt::StructOpt;
 
@@ -61,7 +62,10 @@ impl Plugin for GamePlugin {
             // .add_plugin(FrameTimeDiagnosticsPlugin::default())
             // .add_plugin(LogDiagnosticsPlugin::default())
             ;
-        app.add_plugin(ObjPlugin).add_plugin(bevy_stl::StlPlugin);
+        app.add_plugin(ObjPlugin)
+            .add_plugin(bevy_stl::StlPlugin)
+            .add_plugin(PlyPlugin);
+
         app.add_system(persistent_gizmos.system());
         app.add_startup_system(initialize_state.system());
     }

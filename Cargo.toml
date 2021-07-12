@@ -41,10 +41,12 @@ alphanumeric-sort = "1.4.3"
 serde_json = "1.0.64"
 parry3d = { version = "0.5.1", features = ["serde-serialize"] }
 bevy-inspector-egui = "0.5.1"
-bevy_obj = { git = "https://github.com/rezural/bevy_obj.git", branch = "create-normals-and-uv-data" }
 bevy_kira_audio = { version = "0.4.0" } 
-bevy_stl = "0.3.0"
 bevy_gizmos  = { git = "https://github.com/rezural/bevy_gizmos.git", branch = "main" }
+
+bevy_stl = "0.3.0"
+bevy_obj = { git = "https://github.com/rezural/bevy_obj", branch = "create-normals-and-uv-data" }
+bevy_ply = { version = "0.1", git = "https://github.com/rezural/bevy_ply", branch = "main" }
 
 [build-dependencies]
 embed-resource = "1.6.3"
