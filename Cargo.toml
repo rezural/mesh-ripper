@@ -30,26 +30,27 @@ dev = [
 ]
 
 [dependencies]
-bevy = "0.5.0"
-winit = "0.25.0"
-bevy_webgl2 = { version = "0.5.2", optional = true }
-structopt = "0.3.21"
-rand = "0.8.3"
-bevy_fly_camera = "0.7.0"
-glob = "0.3.0"
-alphanumeric-sort = "1.4.3"
-serde_json = "1.0.64"
-parry3d = { version = "0.5.1", features = ["serde-serialize"] }
-bevy-inspector-egui = "0.5.1"
-bevy_kira_audio = { version = "0.4.0" } 
+bevy = "0.5"
+winit = "0.25"
+bevy_webgl2 = { version = "0.5", optional = true }
+structopt = "0.3"
+rand = "0.8"
+bevy_fly_camera = "0.7"
+glob = "0.3"
+alphanumeric-sort = "1.4"
+serde_json = "1"
+parry3d = { version = "0.5", features = ["serde-serialize"] }
+bevy-inspector-egui = "0.5"
+bevy_kira_audio = { version = "0.4" } 
 bevy_gizmos  = { git = "https://github.com/rezural/bevy_gizmos.git", branch = "main" }
 glam = { version = "0.13", features = [ "mint" ] }
 nalgebra = { version = "0.27", features = [ "mint" ] }
 
-bevy_stl = "0.3.0"
+bevy_stl = "0.3"
 bevy_obj = { git = "https://github.com/rezural/bevy_obj", branch = "create-normals-and-uv-data" }
 bevy_ply = { version = "0.1", git = "https://github.com/rezural/bevy_ply", branch = "main" }
-mint = "0.5.6"
+mint = "0.5"
+serde = "1.0"
 
 [build-dependencies]
 embed-resource = "1.6.3"
