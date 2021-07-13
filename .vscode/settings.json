@@ -1,0 +1,8 @@
+{
+    "rust-analyzer.diagnostics.disabled": [
+        "mismatched-arg-count"
+    ],
+    // "rust-analyzer.cargo.features": [
+    //     "dim3"
+    // ]
+}
