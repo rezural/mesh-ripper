@@ -1988,6 +1988,7 @@ version = "0.13.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "70155b56080764b8b758e91e4c63d06da0262c0c939f2cd991cd1382087147df"
 dependencies = [
+ "mint",
  "serde",
  "spirv-std",
 ]
@@ -2501,7 +2502,10 @@ dependencies = [
  "bevy_stl",
  "bevy_webgl2",
  "embed-resource",
+ "glam",
  "glob",
+ "mint",
+ "nalgebra",
  "parry3d",
  "rand",
  "serde_json",
@@ -2551,6 +2555,12 @@ checksum = "791daaae1ed6889560f8c4359194f56648355540573244a5448a83ba1ecc7435"
 dependencies = [
  "adler32",
 ]
+
+[[package]]
+name = "mint"
+version = "0.5.6"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "519df8d6856dcd4b40519947737b408f81be051fc032590659cae5d77d664185"
 
 [[package]]
 name = "mio"
@@ -2653,6 +2663,7 @@ checksum = "462fffe4002f4f2e1f6a9dcf12cc1a6fc0e15989014efc02a941d3e0f5dc2120"
 dependencies = [
  "approx 0.5.0",
  "matrixmultiply",
+ "mint",
  "nalgebra-macros",
  "num-complex",
  "num-rational 0.4.0",

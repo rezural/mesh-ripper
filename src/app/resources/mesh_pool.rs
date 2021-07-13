@@ -11,8 +11,8 @@ pub struct MeshPool {
     pub frame_direction: FrameDirection,
     pub advance_every: Duration,
     pub paused: bool,
+    pub current_mesh_index: usize,
     have_displayed: bool,
-    current_fluid_index: usize,
     current_fluid_entity: Option<Entity>,
     current_mesh_handle: Option<Handle<Mesh>>,
     needs_update: bool,
@@ -31,7 +31,7 @@ impl MeshPool {
             currently_advanced: Duration::default(),
             paused: true,
             have_displayed: false,
-            current_fluid_index: 0,
+            current_mesh_index: 0,
             current_fluid_entity: None,
             current_mesh_handle: None,
             needs_update: true,
@@ -42,13 +42,13 @@ impl MeshPool {
     fn advance(&mut self) {
         // assert!(self.num_fluids != 0);
         if self.num_fluids > 0 {
-            self.current_fluid_index = (self.current_fluid_index + 1) % self.num_fluids;
+            self.current_mesh_index = (self.current_mesh_index + 1) % self.num_fluids;
         }
     }
 
     fn retreat(&mut self) {
-        self.current_fluid_index = if self.current_fluid_index > 0 {
-            self.current_fluid_index - 1
+        self.current_mesh_index = if self.current_mesh_index > 0 {
+            self.current_mesh_index - 1
         } else {
             self.num_fluids - 1
         };
@@ -66,7 +66,7 @@ impl MeshPool {
     }
 
     pub fn reset(&mut self) {
-        self.current_fluid_index = 0;
+        self.current_mesh_index = 0;
     }
 
     pub fn needs_update(
@@ -86,7 +86,7 @@ impl MeshPool {
         &self,
         fluids: &'a MeshAssets,
     ) -> Option<&'a (String, Handle<Mesh>)> {
-        fluids.loaded.get(self.current_fluid_index)
+        fluids.loaded.get(self.current_mesh_index)
     }
 
     pub fn update_fluid(

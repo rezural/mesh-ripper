@@ -1,3 +1,4 @@
+pub mod camera;
 pub mod glob_or_dir_loader;
 pub mod load_manager;
 pub mod lod_midpoint_iterator;

@@ -80,7 +80,7 @@ fn cursor_grab_system(
 
 fn check_lights(
     mut commands: Commands,
-    mut actions: ResMut<Actions>,
+    actions: Res<Actions>,
     mut state: ResMut<AppState>,
 ) {
     if actions.spot_lighting {

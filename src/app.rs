@@ -7,17 +7,19 @@ pub mod resources;
 
 use actions::Actions;
 use actions::ActionsPlugin;
+use bevy::app::AppBuilder;
 use loading::LoadingPlugin;
 use menu::MenuPlugin;
 use player::PlayerPlugin;
+use resources::camera::*;
 
-use bevy::app::AppBuilder;
 // use bevy::diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin};
 use bevy::prelude::*;
 use bevy_gizmos::*;
 use bevy_inspector_egui::InspectorPlugin;
-use bevy_obj::*;
-use bevy_ply::*;
+use bevy_obj::ObjPlugin;
+use bevy_ply::PlyPlugin;
+use bevy_stl::StlPlugin;
 
 use structopt::StructOpt;
 
@@ -57,13 +59,18 @@ impl Plugin for GamePlugin {
             .add_plugin(ActionsPlugin)
             .add_plugin(MenuPlugin)
             .add_plugin(PlayerPlugin)
-            .add_plugin(InspectorPlugin::<Actions>::new())
+            // Widgets & Gizmos
             .add_plugin(GizmosPlugin)
-            // .add_plugin(FrameTimeDiagnosticsPlugin::default())
-            // .add_plugin(LogDiagnosticsPlugin::default())
-            ;
+            // Inspectable
+            .add_plugin(InspectorPlugin::<Actions>::new())
+            .add_plugin(InspectorPlugin::<CameraSystem>::new());
+
+        // .add_plugin(FrameTimeDiagnosticsPlugin::default())
+        // .add_plugin(LogDiagnosticsPlugin::default())
+
+        // 3d Format Loaders
         app.add_plugin(ObjPlugin)
-            .add_plugin(bevy_stl::StlPlugin)
+            .add_plugin(StlPlugin)
             .add_plugin(PlyPlugin);
 
         app.add_system(persistent_gizmos.system());
@@ -72,7 +79,9 @@ impl Plugin for GamePlugin {
 }
 
 fn initialize_state(mut commands: Commands) {
-    commands.insert_resource(State::default())
+    commands.insert_resource(State::default());
+    commands.insert_resource(CameraSystem::default());
+    commands.insert_resource(CameraSystemVisualization::default());
 }
 
 fn persistent_gizmos(

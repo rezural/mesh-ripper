@@ -92,6 +92,25 @@ impl LoadManager {
     ) {
         self.next_lod();
 
+        self.reload(server);
+    }
+
+    pub fn next_lod(&mut self) {
+        if let Some(next_lod) = self.load_iterator.next_lod() {
+            self.load_iterator = next_lod;
+        }
+    }
+
+    pub fn highest_lod(&mut self) {
+        while let Some(next_lod) = self.load_iterator.next_lod() {
+            self.load_iterator = next_lod;
+        }
+    }
+
+    pub fn reload(
+        &mut self,
+        server: &AssetServer,
+    ) {
         let loading: Vec<(String, HandleUntyped)> = self
             .load_iterator
             .clone()
@@ -105,12 +124,6 @@ impl LoadManager {
             .collect();
 
         self.loading.extend(loading)
-    }
-
-    pub fn next_lod(&mut self) {
-        if let Some(next_lod) = self.load_iterator.next_lod() {
-            self.load_iterator = next_lod;
-        }
     }
 
     pub fn fully_loaded(&self) -> bool {
