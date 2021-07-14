@@ -9,7 +9,6 @@ pub struct CameraSystem {
     pub show_camera_visualization: bool,
     pub follow_camera: bool,
     pub camera_timelines: Vec<(String, CameraTimeline)>,
-    #[serde(skip)]
     pub current_timeline: VecAsDropdown<String>,
 }
 

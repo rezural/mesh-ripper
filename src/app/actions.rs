@@ -1,4 +1,5 @@
 use super::inspector::vec_as_dropdown::VecAsDropdown;
+use super::loading::MeshAssets;
 use super::resources::camera::*;
 use super::resources::glob_or_dir_loader::GlobOrDirLoader;
 use super::resources::mesh_pool::MeshPool;
@@ -17,7 +18,8 @@ impl Plugin for ActionsPlugin {
         app.add_system_set(
             SystemSet::on_update(GameState::Playing)
                 .with_system(set_movement_actions.system())
-                .with_system(camera_timeline_system.system()),
+                .with_system(camera_timeline_system.system())
+                .after("update_mesh"),
         );
         app.init_resource::<Actions>().init_resource::<State>();
     }
@@ -103,8 +105,12 @@ impl Default for State {
 // impl Default for CameraSystem {}
 
 fn set_movement_actions(
+    mut commands: Commands,
     mut actions: ResMut<Actions>,
     keyboard_input: Res<Input<KeyCode>>,
+    mut mesh_pool: ResMut<MeshPool>,
+    fluid_assets: ResMut<MeshAssets>,
+    materials: ResMut<Assets<StandardMaterial>>,
 ) {
     if keyboard_input.just_pressed(KeyCode::T) {
         actions.frame_direction = FrameDirection::Forward;
@@ -116,6 +122,21 @@ fn set_movement_actions(
 
     if keyboard_input.just_pressed(KeyCode::Space) {
         actions.paused = !actions.paused;
+    }
+
+    if actions.paused {
+        let material = materials.get_handle(fluid_assets.material.id);
+        if keyboard_input.just_pressed(KeyCode::Left) {
+            mesh_pool.despawn_mesh(&mut commands);
+            mesh_pool.retreat();
+            mesh_pool.spawn_mesh(&*fluid_assets, material.clone(), &mut commands)
+        }
+
+        if keyboard_input.just_pressed(KeyCode::Right) {
+            mesh_pool.despawn_mesh(&mut commands);
+            mesh_pool.advance();
+            mesh_pool.spawn_mesh(&*fluid_assets, material.clone(), &mut commands)
+        }
     }
 
     if keyboard_input.just_pressed(KeyCode::R) && !keyboard_input.pressed(KeyCode::LControl) {
@@ -155,7 +176,9 @@ fn camera_timeline_system(
     pool: ResMut<MeshPool>,
     asset_server: Res<AssetServer>,
     actions: Res<Actions>,
+    time: Res<Time>,
 ) {
+    // println!("camera-timeline-system: {:?}", time.time_since_startup());
     if camera_system.record_mode {
         // we need the highest LOD
         let load_manager = (&mut *loader).load_manager_mut();
@@ -171,13 +194,14 @@ fn camera_timeline_system(
         }
     }
 
+    // fixme move to config_save_system
     if keyboard_input.pressed(KeyCode::LControl) {
         if keyboard_input.just_pressed(KeyCode::S) {
             if let Some(data_dir) = actions.datasets.selected_value() {
                 if let Ok(root) = std::env::current_dir() {
                     let dir_path = root.join("assets/data").join(data_dir);
                     println!("dir_path: {}", dir_path.to_string_lossy());
-                    if let Ok(config) = ron::to_string(&*actions) {
+                    if let Ok(config) = ron::ser::to_string_pretty(&*actions, Default::default()) {
                         match std::fs::write(dir_path.join("mr-config.ron"), config) {
                             Ok(_) => {
                                 println!("Saved config Successfully")
@@ -185,7 +209,9 @@ fn camera_timeline_system(
                             Err(_) => todo!(),
                         }
                     }
-                    if let Ok(camera_config) = ron::to_string(&*camera_system) {
+                    if let Ok(camera_config) =
+                        ron::ser::to_string_pretty(&*camera_system, Default::default())
+                    {
                         match std::fs::write(dir_path.join("mr-camera-config.ron"), camera_config) {
                             Ok(_) => {
                                 println!("Saved camera config Successfully")
@@ -218,7 +244,9 @@ fn camera_timeline_system(
                     (*camera).enabled = true;
                 }
             } else {
-                (*camera).enabled = false;
+                if camera.enabled {
+                    (*camera).enabled = false;
+                }
                 if let Some(timeline_transform) = camera_system
                     .enabled_timeline()
                     .and_then(|ctl| ctl.transform_at_frame(pool.current_mesh_index))

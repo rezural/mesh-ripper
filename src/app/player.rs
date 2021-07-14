@@ -2,6 +2,7 @@ use std::time::Duration;
 
 use super::actions::State as AppState;
 use super::inspector::vec_as_dropdown::VecAsDropdown;
+use super::resources::camera::CameraSystem;
 use super::resources::glob_or_dir_loader::GlobOrDirLoader;
 use super::resources::mesh_pool::MeshPool;
 use super::GameState;
@@ -29,7 +30,9 @@ impl Plugin for PlayerPlugin {
         )
         .add_system_set(
             SystemSet::on_update(GameState::Playing)
-                .with_system(move_player.system())
+                .with_system(handle_actions.system())
+                .with_system(update_mesh.system())
+                .label("update_mesh")
                 .with_system(check_lights.system())
                 .with_system(check_for_reload.system())
                 .with_system(cursor_grab_system.system()),
@@ -166,16 +169,14 @@ fn spawn_world(
 }
 
 //FIXME move all this out into stepper.rs, or something
-fn move_player(
-    commands: Commands,
-    time: Res<Time>,
+fn handle_actions(
     mut actions: ResMut<Actions>,
     mut fluid_assets: ResMut<MeshAssets>,
     mut pool: ResMut<MeshPool>,
-    mut materials: ResMut<Assets<StandardMaterial>>,
     asset_server: Res<AssetServer>,
     mut glob_or_dir_loader: ResMut<GlobOrDirLoader>,
     config: Res<AppOptions>,
+    mut camera_system: ResMut<CameraSystem>,
 ) {
     pool.advance_every = Duration::from_secs_f32(actions.advance_every);
     pool.frame_direction = actions.frame_direction.clone();
@@ -208,8 +209,40 @@ fn move_player(
         );
         let load_manager = glob_or_dir_loader.load_manager();
         actions.load_number_of_frames = VecAsDropdown::new(load_manager.load_iterator.get_lods());
-    }
 
+        if let Some(dataset) = actions.datasets.selected_value() {
+            if let Ok(dir) = std::env::current_dir() {
+                let dataset_dir = dir.join("assets/data").join(dataset);
+                println!("loding config");
+                if let Ok(config) = std::fs::read_to_string(dataset_dir.join("mr-config.ron")) {
+                    if let Ok(config) = ron::from_str::<Actions>(config.as_str()) {
+                        println!("got config");
+                        // *actions = config;
+                        actions.fluid_color = config.fluid_color;
+                    }
+                }
+                if let Ok(config) =
+                    std::fs::read_to_string(dataset_dir.join("mr-camera-config.ron"))
+                {
+                    if let Ok(config_camera) = ron::from_str(config.as_str()) {
+                        println!("got camera");
+                        *camera_system = config_camera;
+                    }
+                }
+            }
+        }
+    }
+}
+
+fn update_mesh(
+    mut commands: Commands,
+    mut materials: ResMut<Assets<StandardMaterial>>,
+    fluid_assets: ResMut<MeshAssets>,
+    mut actions: ResMut<Actions>,
+    mut pool: ResMut<MeshPool>,
+    time: Res<Time>,
+) {
+    // println!("update_mesh: {:?}", time.time_since_startup());
     let material = materials.get_handle(fluid_assets.material.id);
     let material = materials.get_mut(material.clone());
 
@@ -219,7 +252,7 @@ fn move_player(
         material.double_sided = true;
         material.roughness = 0.6;
         let material = materials.get_handle(fluid_assets.material.id);
-        pool.update_fluid(commands, &fluid_assets, material, time.delta());
+        pool.update_fluid(&mut commands, &fluid_assets, material, time.delta());
         if let Some(current_mesh) = pool.current_mesh(&fluid_assets) {
             actions.current_file = current_mesh.0.clone();
         }
@@ -254,7 +287,7 @@ fn check_for_reload(
 }
 
 fn check_mesh_assets(
-    commands: Commands,
+    mut commands: Commands,
     time: Res<Time>,
     mut actions: ResMut<Actions>,
     mut fluid_assets: ResMut<MeshAssets>,
@@ -282,7 +315,7 @@ fn check_mesh_assets(
             material.base_color.set_a(actions.opacity);
             material.double_sided = true;
             let material = materials.get_handle(fluid_assets.material.id);
-            pool.update_fluid(commands, &fluid_assets, material, time.delta());
+            pool.update_fluid(&mut commands, &fluid_assets, material, time.delta());
             if let Some(current_mesh) = pool.current_mesh(&fluid_assets) {
                 actions.current_file = current_mesh.0.clone();
             }

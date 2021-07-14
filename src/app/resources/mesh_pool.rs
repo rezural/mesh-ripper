@@ -3,8 +3,6 @@ use std::time::Duration;
 use crate::app::{actions::FrameDirection, loading::MeshAssets};
 use bevy::prelude::*;
 
-use super::wave_positions::WavePositions;
-
 #[derive(Clone)]
 pub struct MeshPool {
     pub num_fluids: usize,
@@ -39,14 +37,14 @@ impl MeshPool {
         }
     }
 
-    fn advance(&mut self) {
+    pub fn advance(&mut self) {
         // assert!(self.num_fluids != 0);
         if self.num_fluids > 0 {
             self.current_mesh_index = (self.current_mesh_index + 1) % self.num_fluids;
         }
     }
 
-    fn retreat(&mut self) {
+    pub fn retreat(&mut self) {
         self.current_mesh_index = if self.current_mesh_index > 0 {
             self.current_mesh_index - 1
         } else {
@@ -89,9 +87,45 @@ impl MeshPool {
         fluids.loaded.get(self.current_mesh_index)
     }
 
+    pub fn despawn_mesh(
+        &mut self,
+        commands: &mut Commands,
+    ) {
+        if let Some(entity) = self.current_fluid_entity {
+            let mut current_entity = commands.entity(entity);
+            current_entity.despawn_recursive();
+            self.current_fluid_entity = None;
+        }
+    }
+
+    pub fn spawn_mesh(
+        &mut self,
+        fluids: &MeshAssets,
+        water_material: Handle<StandardMaterial>,
+        commands: &mut Commands,
+    ) {
+        if let Some(new_fluid) = self.current_mesh(fluids) {
+            let entity = commands
+                .spawn()
+                .insert_bundle(PbrBundle {
+                    mesh: new_fluid.1.clone(),
+                    material: water_material.clone(),
+                    // transform: Transform {
+                    //     scale: Vec3::new(1., 4., 4.),
+                    //     ..Default::default()
+                    // },
+                    ..Default::default()
+                })
+                .id();
+
+            self.current_mesh_handle = Some(new_fluid.1.clone());
+            self.current_fluid_entity = Some(entity);
+        }
+    }
+
     pub fn update_fluid(
         &mut self,
-        mut commands: Commands,
+        commands: &mut Commands,
         fluids: &MeshAssets,
         water_material: Handle<StandardMaterial>,
         delta: Duration,
@@ -103,41 +137,14 @@ impl MeshPool {
 
         self.currently_advanced = Duration::default();
 
-        if self.current_fluid_entity.is_some() {
-            let mut current_entity = commands.entity(self.current_fluid_entity.unwrap());
-            current_entity.despawn_recursive();
-        }
+        self.despawn_mesh(commands);
 
         self.move_in_frame_direction();
 
         if fluids.loaded.len() > 0 {
             self.have_displayed = true;
 
-            if let Some(new_fluid) = self.current_mesh(fluids) {
-                let entity = commands
-                    .spawn()
-                    .insert_bundle(PbrBundle {
-                        mesh: new_fluid.1.clone(),
-                        material: water_material.clone(),
-                        // transform: Transform {
-                        //     scale: Vec3::new(1., 4., 4.),
-                        //     ..Default::default()
-                        // },
-                        ..Default::default()
-                    })
-                    .id();
-
-                self.current_mesh_handle = Some(new_fluid.1.clone());
-                self.current_fluid_entity = Some(entity);
-            }
+            self.spawn_mesh(fluids, water_material, commands);
         }
-    }
-
-    pub fn _update_position(
-        &mut self,
-        _fluid_assets: MeshAssets,
-        _positions: WavePositions,
-    ) -> Option<Vec3> {
-        None
     }
 }

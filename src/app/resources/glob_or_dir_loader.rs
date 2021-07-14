@@ -11,6 +11,8 @@ pub struct GlobOrDirLoader {
     load_dirs: String,
 }
 
+const FILE_EXTENSIONS: [&str; 3] = ["obj", "ply", "stl"];
+
 impl GlobOrDirLoader {
     pub fn new(
         load_manager: LoadManager,
@@ -86,7 +88,16 @@ impl GlobOrDirLoader {
                     let files: Vec<String> = entries
                         .filter(|e| e.is_ok())
                         .map(|e| e.unwrap().path())
-                        .filter(|e| e.is_file())
+                        .filter(|f| f.is_file())
+                        .filter(|f| {
+                            FILE_EXTENSIONS
+                                .iter()
+                                .find(|ext| {
+                                    let r = &*(f.extension().unwrap_or_default().to_string_lossy());
+                                    &r == *ext
+                                })
+                                .is_some()
+                        })
                         .map(|e| e.to_string_lossy().to_string())
                         .collect();
                     return Some(files);

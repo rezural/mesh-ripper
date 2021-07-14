@@ -1,6 +1,7 @@
 use bevy::prelude::*;
 use bevy_inspector_egui::Inspectable;
 use rand::Rng;
+use serde::*;
 use std::{
     collections::hash_map::DefaultHasher,
     fmt::{Debug, Display},
@@ -8,7 +9,7 @@ use std::{
     ops::BitXor,
 };
 
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct VecAsDropdown<T>
 where
     T: Clone + Display + PartialEq + Debug,
