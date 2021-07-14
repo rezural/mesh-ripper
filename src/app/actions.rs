@@ -171,6 +171,33 @@ fn camera_timeline_system(
         }
     }
 
+    if keyboard_input.pressed(KeyCode::LControl) {
+        if keyboard_input.just_pressed(KeyCode::S) {
+            if let Some(data_dir) = actions.datasets.selected_value() {
+                if let Ok(root) = std::env::current_dir() {
+                    let dir_path = root.join("assets/data").join(data_dir);
+                    println!("dir_path: {}", dir_path.to_string_lossy());
+                    if let Ok(config) = ron::to_string(&*actions) {
+                        match std::fs::write(dir_path.join("mr-config.ron"), config) {
+                            Ok(_) => {
+                                println!("Saved config Successfully")
+                            }
+                            Err(_) => todo!(),
+                        }
+                    }
+                    if let Ok(camera_config) = ron::to_string(&*camera_system) {
+                        match std::fs::write(dir_path.join("mr-camera-config.ron"), camera_config) {
+                            Ok(_) => {
+                                println!("Saved camera config Successfully")
+                            }
+                            Err(_) => todo!(),
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     if camera_system.show_camera_visualization {
         visualization.despawn(&*camera_system, &mut commands);
         visualization.spawn(

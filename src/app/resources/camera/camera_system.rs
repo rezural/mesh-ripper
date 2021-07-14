@@ -1,14 +1,15 @@
-use crate::app::inspector::vec_as_dropdown::VecAsDropdown;
-
 use super::camera_timeline::CameraTimeline;
+use crate::app::inspector::vec_as_dropdown::VecAsDropdown;
 use bevy_inspector_egui::Inspectable;
+use serde::*;
 
-#[derive(Inspectable)]
+#[derive(Inspectable, Debug, Serialize, Deserialize)]
 pub struct CameraSystem {
     pub record_mode: bool,
     pub show_camera_visualization: bool,
     pub follow_camera: bool,
     pub camera_timelines: Vec<(String, CameraTimeline)>,
+    #[serde(skip)]
     pub current_timeline: VecAsDropdown<String>,
 }
 

@@ -44,13 +44,14 @@ bevy-inspector-egui = "0.5"
 bevy_kira_audio = { version = "0.4" } 
 bevy_gizmos  = { git = "https://github.com/rezural/bevy_gizmos.git", branch = "main" }
 glam = { version = "0.13", features = [ "mint" ] }
-nalgebra = { version = "0.27", features = [ "mint" ] }
+nalgebra = { version = "0.27", features = [ "mint", "serde-serialize"] }
 
 bevy_stl = "0.3"
 bevy_obj = { git = "https://github.com/rezural/bevy_obj", branch = "create-normals-and-uv-data" }
 bevy_ply = { version = "0.1", git = "https://github.com/rezural/bevy_ply", branch = "main" }
 mint = "0.5"
-serde = "1.0"
+serde = "1"
+ron = { version = "0.6"}#, features = [ "serde" ] }
 
 [build-dependencies]
-embed-resource = "1.6.3"
+embed-resource = "1.6"
