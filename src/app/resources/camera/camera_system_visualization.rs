@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use super::camera_system::CameraSystem;
+use super::{camera_system::CameraSystem, CameraFrame};
 
 #[derive(Default)]
 pub struct CameraSystemVisualization {
@@ -29,7 +29,7 @@ impl CameraSystemVisualization {
                         .insert_bundle(PbrBundle {
                             mesh: meshes.add(Mesh::from(shape::Cube { size: 1.0 })),
                             material: materials.add(Color::rgb(0.5, 0.5, 1.0).into()),
-                            transform: p,
+                            transform: CameraFrame::isometry_to_transform(p),
                             ..Default::default()
                         })
                         .id()
@@ -47,7 +47,7 @@ impl CameraSystemVisualization {
                 .insert_bundle(PbrBundle {
                     mesh: meshes.add(Mesh::from(shape::Cube { size: 1.0 })),
                     material: materials.add(Color::rgb(0.5, 0.1, 1.0).into()),
-                    transform: lerp,
+                    transform: CameraFrame::isometry_to_transform(lerp),
                     ..Default::default()
                 })
                 .id();

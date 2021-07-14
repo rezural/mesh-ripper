@@ -23,6 +23,8 @@ use bevy_stl::StlPlugin;
 
 use structopt::StructOpt;
 
+pub type Real = f32;
+
 #[derive(Clone, Eq, PartialEq, Debug, Hash)]
 enum GameState {
     RegisterInitialResources,

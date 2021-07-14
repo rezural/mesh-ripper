@@ -6,7 +6,7 @@ use super::GameState;
 use bevy::prelude::*;
 use bevy_fly_camera::FlyCamera;
 use bevy_inspector_egui::Inspectable;
-
+use serde::*;
 pub struct ActionsPlugin;
 
 impl Plugin for ActionsPlugin {
@@ -23,7 +23,7 @@ impl Plugin for ActionsPlugin {
     }
 }
 
-#[derive(Inspectable, Debug, Clone)]
+#[derive(Inspectable, Debug, Clone, Serialize, Deserialize)]
 pub enum FrameDirection {
     Forward,
     Back,
@@ -35,7 +35,7 @@ impl Default for FrameDirection {
     }
 }
 
-#[derive(Inspectable, Debug)]
+#[derive(Inspectable, Debug, Serialize, Deserialize)]
 pub struct Actions {
     pub frame_direction: FrameDirection,
     #[inspectable(min = 0.0, max = 1.0, speed = 0.01)]
@@ -49,8 +49,10 @@ pub struct Actions {
     #[inspectable(min = 0.0, max = 1.0, speed = 0.01)]
     pub opacity: f32,
     #[inspectable(label = "# of Frames to Load")]
+    #[serde(skip)]
     pub load_number_of_frames: VecAsDropdown<usize>,
     #[inspectable(label = "Load from Dataset")]
+    #[serde(skip)]
     pub datasets: VecAsDropdown<String>,
     pub current_file: String,
     pub show_axis: bool,
@@ -194,7 +196,7 @@ fn camera_timeline_system(
                     .enabled_timeline()
                     .and_then(|ctl| ctl.transform_at_frame(pool.current_mesh_index))
                 {
-                    *transform = timeline_transform;
+                    *transform = CameraFrame::isometry_to_transform(timeline_transform);
                 }
             }
         }

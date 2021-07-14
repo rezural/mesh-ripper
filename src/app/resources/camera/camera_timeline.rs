@@ -1,13 +1,17 @@
 use bevy::prelude::Transform;
 use bevy_inspector_egui::Inspectable;
 use nalgebra::{Isometry3, Translation3, UnitQuaternion};
+use serde::*;
 
+use crate::app::Real;
 // use parry3d::math::{Isometry, Real};
 
-#[derive(Default, Clone, Debug, Inspectable)]
+#[derive(Default, Clone, Debug, Inspectable, Serialize, Deserialize)]
 pub struct CameraTimeline {
     pub timeline: Vec<CameraFrame>,
 }
+
+type MintTransform = (mint::Vector3<Real>, mint::Quaternion<Real>);
 
 impl CameraTimeline {
     pub fn add_frame(
@@ -15,7 +19,7 @@ impl CameraTimeline {
         frame: usize,
         pose: Transform,
     ) {
-        self.timeline.push(CameraFrame::new(frame, pose));
+        self.timeline.push(CameraFrame::from_transform(frame, pose));
         self.timeline.sort_by(|a, b| a.frame.cmp(&b.frame))
     }
 
@@ -23,7 +27,7 @@ impl CameraTimeline {
     pub fn transform_at_frame(
         &self,
         frame: usize,
-    ) -> Option<Transform> {
+    ) -> Option<Isometry3<Real>> {
         if self.timeline.len() < 1 {
             return None;
         }
@@ -64,49 +68,50 @@ impl CameraTimeline {
         a: &CameraFrame,
         b: &CameraFrame,
         frame: usize,
-    ) -> Transform {
+    ) -> Isometry3<Real> {
         let t = ((frame - a.frame) as f32) / ((b.frame - a.frame) as f32);
 
         let from = a.pose;
         let to = b.pose;
-        type Real = f32;
 
-        type MintTransform = (mint::Vector3<Real>, mint::Quaternion<Real>);
-
-        let fromm: MintTransform = (from.translation.into(), from.rotation.into());
-        let tom: MintTransform = (to.translation.into(), to.rotation.into());
-
-        let fromna = Isometry3::from_parts(
-            Translation3::new(fromm.0.x, fromm.0.y, fromm.0.z),
-            UnitQuaternion::from_quaternion(fromm.1.into()),
-        );
-
-        let tona = Isometry3::from_parts(
-            Translation3::new(tom.0.x, tom.0.y, tom.0.z),
-            UnitQuaternion::from_quaternion(tom.1.into()),
-        );
-
-        let lerp = fromna.lerp_slerp(&tona, t);
-        let lerp: MintTransform = (lerp.translation.vector.into(), lerp.rotation.into());
-        Transform {
-            translation: lerp.0.into(),
-            rotation: lerp.1.into(),
-            ..Default::default()
-        }
+        from.lerp_slerp(&to, t) // lerp_slerp!
     }
 }
-#[derive(Clone, Debug, Inspectable)]
+#[derive(Clone, Debug, Inspectable, Serialize, Deserialize)]
 pub struct CameraFrame {
     pub frame: usize,
-    pub pose: Transform,
+    #[inspectable(ignore)]
+    pub pose: Isometry3<Real>,
 }
 
 impl CameraFrame {
-    pub fn new(
+    pub fn from_transform(
         frame: usize,
         pose: Transform,
     ) -> Self {
-        Self { frame, pose }
+        Self {
+            frame,
+            pose: Self::transform_to_isometry(pose),
+        }
+    }
+
+    fn transform_to_isometry(transform: Transform) -> Isometry3<Real> {
+        let from: MintTransform = (transform.translation.into(), transform.rotation.into());
+        Isometry3::from_parts(
+            Translation3::new(from.0.x, from.0.y, from.0.z),
+            UnitQuaternion::from_quaternion(from.1.into()),
+        )
+    }
+
+    pub fn isometry_to_transform(isometry: Isometry3<Real>) -> Transform {
+        let transform: MintTransform =
+            (isometry.translation.vector.into(), isometry.rotation.into());
+
+        Transform {
+            translation: transform.0.into(),
+            rotation: transform.1.into(),
+            ..Default::default()
+        }
     }
 }
 
@@ -114,7 +119,7 @@ impl Default for CameraFrame {
     fn default() -> Self {
         Self {
             frame: 0,
-            pose: Transform::identity(),
+            pose: Isometry3::identity(),
         }
     }
 }
