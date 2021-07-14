@@ -13,17 +13,27 @@ This currently only supports obj files. More coming soon.
     cargo run --release -- --features=native ./assets/data/<YOUR_DATA_DIR>
 ```
 
+## File Format Support
+
+Supported formats:
+    * Ply
+    * Obj
+    * Stl
+    * (probably gltf, havent tested yet)
+
 ## TODO
 
 - [ ] Better Camera System
 - [ ] Ability to load files outside of assets
-- [ ] More file format support (3d meshes) like stl, ply, obj, vtk, gltf et al.
-- [ ] Support for points from stl, ply, vtk, obj
 - [ ] Moving mouse on advance_every should increase in .01 - .0025 increments
 - [ ] Look towards some point on the mesh (or center of mesh, expensive though) on startup, a little above, in front 
 - [ ] Load and cache from urls
 - [ ] Release mouse when focus lost
-- [ ] Add lights
+- [ ] Support for points from stl, ply, vtk, obj
+- [ ] More file format support (3d meshes) like vtk, gltf et al. (Currently stl, ply, obj)
+- [X] Save/load from config directory
+- [X] Recording Camera locations & Interpolation
+- [X] Add lights
 - [x] When a lod is chosen that is not directly above the current lod, load the next lod, then the next higher etc, otherwise you get speedup at the start (the files that have been loaded), and jumpy framerate
 - [x] Pause/Forward/Back -> Forward/Back & separate Pause
 - [x] Esc to get out of mouse mode
