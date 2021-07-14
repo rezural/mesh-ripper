@@ -1,6 +1,6 @@
 [package]
 name = "mesh-ripper" # ToDo
-version = "0.3.0"
+version = "0.4.0"
 publish = ["crates-io"]
 authors = ["rezural <rezural@protonmail.com>"]
 edition = "2018"
