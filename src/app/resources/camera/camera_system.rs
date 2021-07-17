@@ -1,5 +1,6 @@
 use super::camera_timeline::CameraTimeline;
 use crate::app::inspector::vec_as_dropdown::VecAsDropdown;
+use bevy::prelude::Transform;
 use bevy_inspector_egui::Inspectable;
 use serde::*;
 
@@ -8,6 +9,8 @@ pub struct CameraSystem {
     pub record_mode: bool,
     pub show_camera_visualization: bool,
     pub follow_camera: bool,
+    #[serde(skip)]
+    pub current_transform: Transform,
     pub camera_timelines: Vec<(String, CameraTimeline)>,
     pub current_timeline: VecAsDropdown<String>,
 }
@@ -54,6 +57,7 @@ impl Default for CameraSystem {
             record_mode: false,
             show_camera_visualization: false,
             follow_camera: false,
+            current_transform: Transform::identity(),
         }
     }
 }

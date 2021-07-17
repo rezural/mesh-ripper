@@ -170,23 +170,27 @@ fn spawn_world(
 
 //FIXME move all this out into stepper.rs, or something
 fn handle_actions(
+    mut commands: Commands,
     mut actions: ResMut<Actions>,
-    mut fluid_assets: ResMut<MeshAssets>,
-    mut pool: ResMut<MeshPool>,
+    mut meshes: ResMut<MeshAssets>,
+    mut mesh_pool: ResMut<MeshPool>,
     asset_server: Res<AssetServer>,
     mut glob_or_dir_loader: ResMut<GlobOrDirLoader>,
     config: Res<AppOptions>,
     mut camera_system: ResMut<CameraSystem>,
+    materials: ResMut<Assets<StandardMaterial>>,
 ) {
-    pool.advance_every = Duration::from_secs_f32(actions.advance_every);
-    pool.frame_direction = actions.frame_direction.clone();
-    pool.paused = actions.paused;
+    mesh_pool.advance_every = Duration::from_secs_f32(actions.advance_every);
+    mesh_pool.frame_direction = actions.frame_direction.clone();
+    mesh_pool.paused = actions.paused;
 
     if actions.reset {
-        pool.reset();
+        let material = materials.get_handle(meshes.material.id);
+        mesh_pool.reset();
+        mesh_pool.redraw(&mut commands, &*meshes, material);
         actions.reset = false;
     }
-    pool.num_fluids = fluid_assets.loaded.len();
+    mesh_pool.num_fluids = meshes.loaded.len();
 
     let load_manager = glob_or_dir_loader.load_manager_mut();
     // if the user has chosen a higer asset load lod
@@ -196,7 +200,7 @@ fn handle_actions(
             && load_manager.fully_loaded()
         {
             load_manager.next_lod_and_reload(&asset_server);
-            fluid_assets.loading = load_manager.loading.clone();
+            meshes.loading = load_manager.loading.clone();
         }
     }
 
@@ -219,6 +223,10 @@ fn handle_actions(
                         println!("got config");
                         // *actions = config;
                         actions.fluid_color = config.fluid_color;
+                        actions.spot_lighting = config.spot_lighting;
+                        actions.lighting_intensity = config.lighting_intensity;
+                        actions.opacity = config.opacity;
+                        actions.material_roughness = config.material_roughness;
                     }
                 }
                 if let Ok(config) =
@@ -242,7 +250,7 @@ fn update_mesh(
     mut pool: ResMut<MeshPool>,
     time: Res<Time>,
 ) {
-    // println!("update_mesh: {:?}", time.time_since_startup());
+    // println!("update_mesh: {:?}", time.time_since_startup());`
     let material = materials.get_handle(fluid_assets.material.id);
     let material = materials.get_mut(material.clone());
 

@@ -4,7 +4,7 @@
 #[cfg(target_arch = "wasm32")]
 use bevy_webgl2;
 
-mod app;
+pub mod app;
 
 use app::{AppOptions, GamePlugin};
 use bevy::prelude::{App, ClearColor, Color, Msaa, WindowDescriptor};

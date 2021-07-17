@@ -123,6 +123,15 @@ impl MeshPool {
         }
     }
 
+    pub fn redraw(
+        &mut self,
+        commands: &mut Commands,
+        fluids: &MeshAssets,
+        water_material: Handle<StandardMaterial>,
+    ) {
+        self.despawn_mesh(commands);
+        self.spawn_mesh(fluids, water_material, commands);
+    }
     pub fn update_fluid(
         &mut self,
         commands: &mut Commands,
@@ -131,6 +140,7 @@ impl MeshPool {
         delta: Duration,
     ) {
         if !self.needs_update(delta) {
+            // println!("dont need update");
             self.currently_advanced += delta;
             return;
         }
@@ -138,13 +148,16 @@ impl MeshPool {
         self.currently_advanced = Duration::default();
 
         self.despawn_mesh(commands);
-
+        // print!("despawn ");
         self.move_in_frame_direction();
 
         if fluids.loaded.len() > 0 {
             self.have_displayed = true;
+            // print!("spawn ");
 
             self.spawn_mesh(fluids, water_material, commands);
         }
+
+        // print!("\n");
     }
 }

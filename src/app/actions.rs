@@ -126,13 +126,13 @@ fn set_movement_actions(
 
     if actions.paused {
         let material = materials.get_handle(fluid_assets.material.id);
-        if keyboard_input.just_pressed(KeyCode::Left) {
+        if keyboard_input.pressed(KeyCode::Left) {
             mesh_pool.despawn_mesh(&mut commands);
             mesh_pool.retreat();
             mesh_pool.spawn_mesh(&*fluid_assets, material.clone(), &mut commands)
         }
 
-        if keyboard_input.just_pressed(KeyCode::Right) {
+        if keyboard_input.pressed(KeyCode::Right) {
             mesh_pool.despawn_mesh(&mut commands);
             mesh_pool.advance();
             mesh_pool.spawn_mesh(&*fluid_assets, material.clone(), &mut commands)
@@ -239,20 +239,12 @@ fn camera_timeline_system(
 
     if camera_system.follow_camera {
         if let Ok((mut camera, mut transform)) = query.single_mut() {
-            if actions.paused {
-                if !camera.enabled {
-                    (*camera).enabled = true;
-                }
-            } else {
-                if camera.enabled {
-                    (*camera).enabled = false;
-                }
-                if let Some(timeline_transform) = camera_system
-                    .enabled_timeline()
-                    .and_then(|ctl| ctl.transform_at_frame(pool.current_mesh_index))
-                {
-                    *transform = CameraFrame::isometry_to_transform(timeline_transform);
-                }
+            if let Some(timeline_transform) = camera_system
+                .enabled_timeline()
+                .and_then(|ctl| ctl.transform_at_frame(pool.current_mesh_index))
+            {
+                *transform = CameraFrame::isometry_to_transform(timeline_transform);
+                camera_system.current_transform = transform.clone();
             }
         }
     }
