@@ -1,0 +1,10 @@
+#!/usr/bin/env ruby
+
+require 'json'
+
+dir  = ARGV[0]
+glob  = ARGV[1]
+
+files = `ls #{dir}/#{glob}`.split("\n")
+
+puts JSON.dump(files)

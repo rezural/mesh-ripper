@@ -1,0 +1,23 @@
+#!/usr/bin/env ruby
+
+require 'json'
+
+dir  = ARGV[0]
+glob  = ARGV[1]
+num = ARGV[2]
+out = ARGV[3]
+
+cmd = "./script/get-run-files-as-json #{dir} '#{glob}' | target/debug/mid_pointer -i #{num}"
+puts cmd
+files = `#{cmd}`
+
+files = JSON.load(files)
+commands = files.each_with_index.map do |level, i|
+    basename = File.basename(dir)
+    files = level.join(' ')
+    "zip #{out}/#{basename}-#{i+1}.zip #{files}"
+end
+
+commands.each do |c|
+    `#{c}`
+end
