@@ -40,6 +40,8 @@ pub struct AppOptions {
     file_glob: Option<String>,
     #[structopt(short, long, default_value = "assets/data")]
     dataset_dir: String,
+    #[structopt(short, long)]
+    load_mesh: Option<String>,
     #[structopt(short, long, default_value = "100")]
     load_max: usize,
 }

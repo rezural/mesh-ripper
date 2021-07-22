@@ -35,6 +35,7 @@ impl CameraTimeline {
         let exact_frame = available_frames.contains(&frame);
         if exact_frame {
             if let Some(idx) = available_frames.iter().position(|e| *e == frame) {
+                // println!("exact frame");
                 return Some(self.timeline.get(idx).unwrap().pose);
             }
         } else {
@@ -47,15 +48,21 @@ impl CameraTimeline {
             if let Some(candidate_frame) = candidate_frame {
                 if candidate_frame.0 > 0 {
                     if candidate_frame.0 < self.timeline.len() {
+                        // println!("lerp 2 frames");
+
                         let (before, after) = (
                             self.timeline[candidate_frame.0 - 1].clone(),
                             self.timeline[candidate_frame.0].clone(),
                         );
                         return Some(Self::lerp_frames(&before, &after, frame));
                     } else {
+                        // println!("last frame");
+
                         return Some(self.timeline.last().unwrap().pose);
                     }
                 } else {
+                    // println!("first frame");
+
                     return Some(self.timeline.first().unwrap().pose);
                 }
             }

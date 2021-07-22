@@ -1,5 +1,6 @@
 use super::inspector::vec_as_dropdown::VecAsDropdown;
 use super::loading::MeshAssets;
+use super::resources::background_meshes::BackgroundMeshes;
 use super::resources::camera::*;
 use super::resources::glob_or_dir_loader::GlobOrDirLoader;
 use super::resources::mesh_pool::MeshPool;
@@ -39,6 +40,7 @@ impl Default for FrameDirection {
 
 #[derive(Inspectable, Debug, Serialize, Deserialize)]
 pub struct Actions {
+    pub current_frame: usize,
     pub frame_direction: FrameDirection,
     #[inspectable(min = 0.0, max = 1.0, speed = 0.01)]
     pub advance_every: f32,
@@ -69,6 +71,7 @@ pub struct Actions {
 impl Default for Actions {
     fn default() -> Self {
         Self {
+            current_frame: 0,
             advance_every: 0.1,
             // last_time_drawn: Instant::now(),
             paused: true,
@@ -93,12 +96,16 @@ impl Default for Actions {
 
 pub struct State {
     pub spot_lights: Option<Vec<Entity>>,
+    pub background_meshes: BackgroundMeshes,
 }
 
 impl Default for State {
     fn default() -> Self {
         let spot_lights = Some(Vec::new());
-        Self { spot_lights }
+        Self {
+            spot_lights,
+            background_meshes: Default::default(),
+        }
     }
 }
 
@@ -238,7 +245,7 @@ fn camera_timeline_system(
     }
 
     if camera_system.follow_camera {
-        if let Ok((mut camera, mut transform)) = query.single_mut() {
+        if let Ok((_, mut transform)) = query.single_mut() {
             if let Some(timeline_transform) = camera_system
                 .enabled_timeline()
                 .and_then(|ctl| ctl.transform_at_frame(pool.current_mesh_index))

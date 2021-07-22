@@ -2,6 +2,8 @@ use std::time::Duration;
 
 use super::actions::State as AppState;
 use super::inspector::vec_as_dropdown::VecAsDropdown;
+use super::resources::asset_load_checker::AssetLoadChecker;
+use super::resources::background_meshes::BackgroundMeshes;
 use super::resources::camera::CameraSystem;
 use super::resources::glob_or_dir_loader::GlobOrDirLoader;
 use super::resources::mesh_pool::MeshPool;
@@ -258,11 +260,12 @@ fn update_mesh(
         material.base_color = actions.fluid_color;
         material.base_color.set_a(actions.opacity);
         material.double_sided = true;
-        material.roughness = 0.6;
+        material.roughness = actions.material_roughness;
         let material = materials.get_handle(fluid_assets.material.id);
         pool.update_fluid(&mut commands, &fluid_assets, material, time.delta());
         if let Some(current_mesh) = pool.current_mesh(&fluid_assets) {
             actions.current_file = current_mesh.0.clone();
+            actions.current_frame = pool.current_mesh_index;
         }
     }
 }
@@ -271,25 +274,22 @@ fn check_for_reload(
     mut actions: ResMut<Actions>,
     config: Res<AppOptions>,
     mut glob_or_dir_loader: ResMut<GlobOrDirLoader>,
+    asset_server: Res<AssetServer>,
 ) {
     if !actions.reload {
         return;
     }
 
-    if let Some(glob) = config.file_glob.clone() {
-        let new_assets: Vec<String> = glob::glob(glob.as_str())
-            .expect("Loading fluid from assets failed in glob")
-            .map(|entry| entry.unwrap().to_string_lossy().to_string())
-            .collect();
+    glob_or_dir_loader.update(
+        config.file_glob.clone(),
+        actions.datasets.selected_value(),
+        &asset_server,
+    );
 
-        let load_manager = glob_or_dir_loader.load_manager_mut();
-
-        load_manager.add_new_assets(new_assets);
-        actions.load_number_of_frames = VecAsDropdown::new_with_selected(
-            load_manager.load_iterator.get_lods(),
-            actions.load_number_of_frames.selected_index(),
-        );
-    }
+    actions.load_number_of_frames = VecAsDropdown::new_with_selected(
+        glob_or_dir_loader.load_manager().load_iterator.get_lods(),
+        actions.load_number_of_frames.selected_index(),
+    );
 
     actions.reload = false;
 }
@@ -303,7 +303,12 @@ fn check_mesh_assets(
     mut pool: ResMut<MeshPool>,
     mut materials: ResMut<Assets<StandardMaterial>>,
     mut glob_or_dir_loader: ResMut<GlobOrDirLoader>,
+    mut background_meshes: ResMut<BackgroundMeshes>,
+    load_checker: Res<AssetLoadChecker<Mesh>>,
 ) {
+    load_checker.update(&mut *background_meshes, &*asset_server);
+    (*background_meshes).spawn(&mut commands, &mut (*materials));
+
     let load_manager = glob_or_dir_loader.load_manager_mut();
     load_manager.update_load_state(&asset_server);
 

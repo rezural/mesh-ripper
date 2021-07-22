@@ -27,8 +27,8 @@ impl CameraSystemVisualization {
                     commands
                         .spawn()
                         .insert_bundle(PbrBundle {
-                            mesh: meshes.add(Mesh::from(shape::Cube { size: 0.4 })),
-                            material: materials.add(Color::rgba(0.5, 0.5, 1.0, 0.5).into()),
+                            mesh: meshes.add(Mesh::from(shape::Cube { size: 0.2 })),
+                            material: materials.add(Color::rgba(0.5, 0.5, 1.0, 0.3).into()),
                             transform: CameraFrame::isometry_to_transform(p),
                             ..Default::default()
                         })
@@ -45,8 +45,8 @@ impl CameraSystemVisualization {
             let id = commands
                 .spawn()
                 .insert_bundle(PbrBundle {
-                    mesh: meshes.add(Mesh::from(shape::Cube { size: 0.4 })),
-                    material: materials.add(Color::rgba(0.5, 0.1, 1.0, 0.7).into()),
+                    mesh: meshes.add(Mesh::from(shape::Cube { size: 0.2 })),
+                    material: materials.add(Color::rgba(0.5, 0.1, 1.0, 0.3).into()),
                     transform: CameraFrame::isometry_to_transform(lerp),
                     ..Default::default()
                 })

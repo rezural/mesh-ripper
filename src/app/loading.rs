@@ -1,11 +1,15 @@
 mod paths;
 
+use std::path::Path;
+
+use super::resources::background_meshes::BackgroundMeshes;
 use super::GameState;
 use super::{
     actions::Actions, loading::paths::PATHS, resources::lod_midpoint_iterator::MidpointIterator,
     AppOptions,
 };
 use crate::app::inspector::vec_as_dropdown::VecAsDropdown;
+use crate::app::resources::asset_load_checker::{AssetLoadChecker, LoadingSource};
 use crate::app::resources::glob_or_dir_loader::GlobOrDirLoader;
 use crate::app::resources::load_manager::LoadManager;
 use bevy::asset::LoadState;
@@ -88,6 +92,14 @@ fn register_initial_resources(
 
     commands.insert_resource(glob_or_dir_loader.clone());
 
+    // Background meshes
+
+    let background_meshes = BackgroundMeshes::default();
+    commands.insert_resource(background_meshes);
+    let asset_load_checker: AssetLoadChecker<Mesh> = AssetLoadChecker::new();
+
+    commands.insert_resource(asset_load_checker);
+
     // set the water color
     let water_colour = Actions::default().fluid_color;
     let material: Handle<StandardMaterial> = materials.add(water_colour.into());
@@ -123,10 +135,18 @@ fn register_initial_resources(
 fn load_mesh_assets(
     mut glob_or_dir_loader: ResMut<GlobOrDirLoader>,
     asset_server: Res<AssetServer>,
+    config: Res<AppOptions>,
+    mut background_meshes: ResMut<BackgroundMeshes>,
 ) {
     glob_or_dir_loader
         .load_manager_mut()
         .load_assets(&asset_server);
+
+    if let Some(load_mesh) = config.load_mesh.clone() {
+        let handle =
+            asset_server.load_untyped(Path::new(&load_mesh).strip_prefix("assets/").unwrap());
+        (*background_meshes).loading_mut().push(handle);
+    }
 }
 
 fn load_assets(

@@ -71,12 +71,12 @@ impl MeshPool {
         &self,
         delta: Duration,
     ) -> bool {
-        if !self.have_displayed {
-            return true;
-        }
         if self.paused {
             return false;
         }
+        if !self.have_displayed {
+            return true;
+        };
         self.currently_advanced + delta > self.advance_every
     }
 
@@ -132,6 +132,7 @@ impl MeshPool {
         self.despawn_mesh(commands);
         self.spawn_mesh(fluids, water_material, commands);
     }
+
     pub fn update_fluid(
         &mut self,
         commands: &mut Commands,
@@ -147,17 +148,17 @@ impl MeshPool {
 
         self.currently_advanced = Duration::default();
 
-        self.despawn_mesh(commands);
-        // print!("despawn ");
-        self.move_in_frame_direction();
-
         if fluids.loaded.len() > 0 {
-            self.have_displayed = true;
-            // print!("spawn ");
+            self.despawn_mesh(commands);
+            print!("despawn ");
+            self.move_in_frame_direction();
+
+            print!("spawn ");
 
             self.spawn_mesh(fluids, water_material, commands);
+            self.have_displayed = true;
         }
 
-        // print!("\n");
+        print!("\n");
     }
 }

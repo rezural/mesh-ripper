@@ -1,3 +1,5 @@
+pub mod asset_load_checker;
+pub mod background_meshes;
 pub mod camera;
 pub mod glob_or_dir_loader;
 pub mod load_manager;
