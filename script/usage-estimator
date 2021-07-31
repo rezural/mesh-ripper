@@ -1,0 +1,113 @@
+#!/usr/bin/env ruby
+require 'bytesize'
+
+class Estimator
+    attr_accessor :particle_diam, :width, :depth, :height
+    
+    def initialize(particle_diam, width, depth, height)
+        @particle_diam = particle_diam
+        @width = width
+        @depth = depth
+        @height = height
+    end
+
+    def num_particles
+        dims.map{|l| l / particle_diam}.reduce(1.0) {|t, d| t = t * d}.to_i
+    end
+
+    def dims
+        [@width, @depth, @height]
+    end
+end
+
+class FloatEstimator < Estimator
+    attr_accessor :type_size
+
+    def initialize(particle_diam, width, depth, height, type_size = 4)
+        @type_size = type_size
+        super(particle_diam, width, depth, height)
+    end
+
+    def byte_size
+        num_particles * (type_size * 3) * (type_size * 3) * (type_size * 3)
+    end
+
+end
+
+class BitFieldEstimator < Estimator
+    def initialize(particle_diam, width, depth, height)
+        super(particle_diam, width, depth, height)
+    end
+
+    def bit_field_size
+        num_particles
+    end
+
+    def offset_size
+        num_particles * 3 * 4
+    end
+
+    def velocity_size
+        #bit size
+        num_particles * 3 * 4
+    end
+
+    def accel_size
+        velocity_size
+    end
+
+    def byte_size
+        ((bit_field_size + velocity_size + accel_size + offset_size) / 8).to_i
+    end
+
+end
+
+
+class IntVecEstimator < Estimator
+    def initialize(particle_diam, width, depth, height)
+        super(particle_diam, width, depth, height)
+    end
+
+    def bit_field_size
+        num_particles
+    end
+
+    def offset_size
+        num_particles * 3 * 8
+    end
+
+    def velocity_size
+        #bit size
+        num_particles * 3 * 8
+    end
+
+    def accel_size
+        velocity_size
+    end
+
+    def byte_size
+        ((bit_field_size + velocity_size + accel_size + offset_size) / 8).to_i
+    end
+
+end
+
+particle_diam = ARGV[0].to_f rescue 0.01
+width = ARGV[1].to_f rescue 100.0
+height = ARGV[2].to_f rescue 8.0
+depth = ARGV[3].to_f rescue 100.0
+
+puts "particle_diam,width,depth,height,num_particles,f32_size,bit_field_size,int_vec_size"
+for width in (1..100)
+    depth = width
+    height = 8
+            est = Estimator.new(particle_diam, width, depth, height)
+            float_est = FloatEstimator.new(particle_diam, width, depth, height)
+            bit_field_est = BitFieldEstimator.new(particle_diam, width, depth, height)
+            int_vec_est = IntVecEstimator.new(particle_diam, width, depth, height)
+            puts "#{particle_diam},#{width},#{depth},#{height},#{est.num_particles},#{float_est.byte_size},#{bit_field_est.byte_size},#{int_vec_est.byte_size}"
+end
+
+# puts "Num particles: #{est.num_particles}"
+# puts "Float size: float_est.byte_size)}"
+# puts "bitfield size: #{ByteSize.new(bit_field_est.byte_size)}"
+# puts "IntVec size: #{ByteSize.new(int_vec_est.byte_size)}"
