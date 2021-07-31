@@ -183,7 +183,7 @@ fn camera_timeline_system(
     pool: ResMut<MeshPool>,
     asset_server: Res<AssetServer>,
     actions: Res<Actions>,
-    time: Res<Time>,
+    // time: Res<Time>,
 ) {
     // println!("camera-timeline-system: {:?}", time.time_since_startup());
     if camera_system.record_mode {
