@@ -6,6 +6,7 @@ use super::resources::asset_load_checker::AssetLoadChecker;
 use super::resources::background_meshes::BackgroundMeshes;
 use super::resources::camera::CameraSystem;
 use super::resources::glob_or_dir_loader::GlobOrDirLoader;
+use super::resources::mesh_aabb_estimator::MeshAABBEstimator;
 use super::resources::mesh_pool::MeshPool;
 use super::GameState;
 use super::{actions::Actions, loading::MeshAssets, AppOptions};
@@ -219,7 +220,6 @@ fn handle_actions(
         if let Some(dataset) = actions.datasets.selected_value() {
             if let Ok(dir) = std::env::current_dir() {
                 let dataset_dir = dir.join("assets/data").join(dataset);
-                println!("loding config");
                 if let Ok(config) = std::fs::read_to_string(dataset_dir.join("mr-config.ron")) {
                     if let Ok(config) = ron::from_str::<Actions>(config.as_str()) {
                         println!("got config");
@@ -352,6 +352,11 @@ fn check_mesh_assets(
             }
         }
     }
+    // println!(
+    //     "fluids_loaded: {}, {}",
+    //     fluid_assets.loaded.len(),
+    //     load_manager.loaded.len()
+    // );
     actions.fluids_loaded = fluid_assets.loaded.len();
     actions.fluids_loaded_percent = (fluid_assets.loaded.len().max(1) as f32
         / (fluid_assets.loaded.len() + load_manager.loading.len()) as f32)

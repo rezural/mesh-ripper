@@ -24,7 +24,6 @@ where
         loading_source: &mut dyn LoadingSource<T>,
         server: &AssetServer,
     ) {
-        println!("updating load source");
         {
             let loading = loading_source.loading_mut();
 
@@ -34,11 +33,6 @@ where
                 .map(|h| server.get_handle(h))
                 .collect();
             loading_source.loaded_mut().extend(newly_loaded.clone());
-            println!(
-                "newly_loaded: {}, source: {}",
-                newly_loaded.len(),
-                loading_source.loaded_mut().len()
-            );
         }
         let loading = loading_source.loading_mut();
 

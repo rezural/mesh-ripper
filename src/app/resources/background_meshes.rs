@@ -19,7 +19,6 @@ impl BackgroundMeshes {
         materials: &mut Assets<StandardMaterial>,
     ) {
         let to_display = self.available_but_not_displayed_yet();
-        println!("to_display: {}", to_display.clone().len());
         for mesh in &to_display {
             println!("spawning");
             let color = *self
@@ -37,11 +36,6 @@ impl BackgroundMeshes {
     }
 
     fn available_but_not_displayed_yet(&self) -> Vec<Handle<Mesh>> {
-        println!(
-            "loaded: {}, displayed: {}",
-            self.loaded.len(),
-            self.displayed.len()
-        );
         self.loaded
             .iter()
             .filter(|&l| !self.displayed.iter().find(|&d| l == d).is_some())
