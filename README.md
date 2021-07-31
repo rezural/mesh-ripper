@@ -24,13 +24,19 @@ Supported formats:
 ## TODO
 
 - [ ] Better Camera System
-- [ ] Ability to load files outside of assets
-- [ ] Moving mouse on advance_every should increase in .01 - .0025 increments
-- [ ] Look towards some point on the mesh (or center of mesh, expensive though) on startup, a little above, in front 
-- [ ] Load and cache from urls
-- [ ] Release mouse when focus lost
 - [ ] Support for points from stl, ply, vtk, obj
+  - [ ] Visualization of points with spheres & arrows where there is velocity & acceleration data
+  - [ ] Look into shader to do same
+- [ ] Ability to load files outside of assets
+- [ ] Arbitrary nesting of directories to select from, ability to select more than one series
+- [ ] Ability to load more than one static files (i.e. landscape)
+- [ ] File picking dialog
+- [ ] Moving mouse on advance_every should increase in .01 - .0025 increments
+- [ ] Move to smooth-bevy-cameras
+- [ ] Look towards some point on the mesh (or center of mesh, expensive though) on startup, a little above, in front 
+- [ ] Release mouse when focus lost
 - [ ] More file format support (3d meshes) like vtk, gltf et al. (Currently stl, ply, obj)
+- [ ] Load and cache from urls
 - [X] Save/load from config directory
 - [X] Recording Camera locations & Interpolation
 - [X] Add lights
@@ -39,6 +45,14 @@ Supported formats:
 - [x] Esc to get out of mouse mode
 - [x] show first frame on startup
 - [x] Better Loading of assets
+
+## BUGS
+- [ ] camera follows mouse on load
+
+## Architecture TODO
+- [ ] Architecture needs cleanup / rethink
+- [ ] Document what needs to be done:
+  - [ ] 
 
 ## Asset Loading
 

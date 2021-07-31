@@ -10,7 +10,7 @@ pub struct MeshPool {
     pub advance_every: Duration,
     pub paused: bool,
     pub current_mesh_index: usize,
-    have_displayed: bool,
+    pub have_displayed: bool,
     current_fluid_entity: Option<Entity>,
     current_mesh_handle: Option<Handle<Mesh>>,
     needs_update: bool,
@@ -71,12 +71,12 @@ impl MeshPool {
         &self,
         delta: Duration,
     ) -> bool {
-        if self.paused {
-            return false;
-        }
         if !self.have_displayed {
             return true;
         };
+        if self.paused {
+            return false;
+        }
         self.currently_advanced + delta > self.advance_every
     }
 
@@ -141,7 +141,6 @@ impl MeshPool {
         delta: Duration,
     ) {
         if !self.needs_update(delta) {
-            // println!("dont need update");
             self.currently_advanced += delta;
             return;
         }
@@ -150,15 +149,10 @@ impl MeshPool {
 
         if fluids.loaded.len() > 0 {
             self.despawn_mesh(commands);
-            print!("despawn ");
             self.move_in_frame_direction();
-
-            print!("spawn ");
 
             self.spawn_mesh(fluids, water_material, commands);
             self.have_displayed = true;
         }
-
-        print!("\n");
     }
 }

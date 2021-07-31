@@ -305,6 +305,8 @@ fn check_mesh_assets(
     mut glob_or_dir_loader: ResMut<GlobOrDirLoader>,
     mut background_meshes: ResMut<BackgroundMeshes>,
     load_checker: Res<AssetLoadChecker<Mesh>>,
+    meshes: Res<Assets<Mesh>>,
+    mut query: Query<(&mut FlyCamera, &mut Transform)>,
 ) {
     load_checker.update(&mut *background_meshes, &*asset_server);
     (*background_meshes).spawn(&mut commands, &mut (*materials));
@@ -328,8 +330,24 @@ fn check_mesh_assets(
             material.base_color.set_a(actions.opacity);
             material.double_sided = true;
             let material = materials.get_handle(fluid_assets.material.id);
+            let have_displayed = pool.have_displayed;
             pool.update_fluid(&mut commands, &fluid_assets, material, time.delta());
             if let Some(current_mesh) = pool.current_mesh(&fluid_assets) {
+                if !have_displayed {
+                    if let Some(aabb) = meshes
+                        .get(current_mesh.1.clone())
+                        .and_then(|mesh| MeshAABBEstimator::aabb(mesh))
+                    {
+                        let eye = MeshAABBEstimator::pose_from_aabb(&aabb);
+                        let target = aabb.center();
+
+                        if let Ok((_, mut transform)) = query.single_mut() {
+                            (*transform) =
+                                Transform::from_translation(Vec3::new(eye.x, eye.y, eye.z))
+                                    .looking_at(Vec3::new(target.x, target.y, target.z), Vec3::Y);
+                        }
+                    }
+                }
                 actions.current_file = current_mesh.0.clone();
             }
         }
