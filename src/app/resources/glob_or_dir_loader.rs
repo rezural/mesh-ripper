@@ -41,7 +41,7 @@ impl GlobOrDirLoader {
         } else if let Some(glob) = glob {
             files.extend(Self::files_from_glob(glob))
         }
-        self.load_manager.clear();
+        // self.load_manager.clear();
         self.load_manager.add_new_assets(files);
         self.load_manager.load_assets(server)
     }
@@ -72,7 +72,14 @@ impl GlobOrDirLoader {
     fn files_from_glob(glob: String) -> Vec<String> {
         glob::glob(glob.as_str())
             .expect("Loading fluid from assets failed in glob")
-            .map(|entry| entry.unwrap().to_string_lossy().to_string())
+            .map(|entry| {
+                entry
+                    .unwrap()
+                    .strip_prefix("assets/")
+                    .unwrap()
+                    .to_string_lossy()
+                    .to_string()
+            })
             .collect()
     }
 
@@ -98,7 +105,12 @@ impl GlobOrDirLoader {
                                 })
                                 .is_some()
                         })
-                        .map(|e| e.to_string_lossy().to_string())
+                        .map(|e| {
+                            e.strip_prefix("assets/")
+                                .unwrap()
+                                .to_string_lossy()
+                                .to_string()
+                        })
                         .collect();
                     return Some(files);
                 }

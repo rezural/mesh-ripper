@@ -33,10 +33,12 @@ impl LoadManager {
         let to_load: VecAssetLoading = self
             .load_iterator
             .clone()
+            .filter(|path| !self.in_loaded_or_loading(path.clone()))
+            .clone()
             .map(|fluid_file| {
                 (
                     fluid_file.clone(),
-                    server.load_untyped(Path::new(&fluid_file).strip_prefix("assets/").unwrap()),
+                    server.load_untyped(Path::new(&fluid_file)),
                 )
             })
             .collect();
@@ -115,12 +117,7 @@ impl LoadManager {
             .load_iterator
             .clone()
             .filter(|f| !self.in_loaded_or_loading(f.clone()))
-            .map(|f| {
-                (
-                    f.clone(),
-                    server.load_untyped(Path::new(&f).strip_prefix("assets/").unwrap()),
-                )
-            })
+            .map(|f| (f.clone(), server.load_untyped(Path::new(&f))))
             .collect();
 
         self.loading.extend(loading)
