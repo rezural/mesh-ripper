@@ -1,6 +1,7 @@
 use std::{fs::read_dir, path::Path};
 
 use bevy::prelude::AssetServer;
+use walkdir::WalkDir;
 
 use super::load_manager::LoadManager;
 
@@ -47,18 +48,14 @@ impl GlobOrDirLoader {
     }
 
     pub fn dirs_from_load_dir(&self) -> Option<Vec<String>> {
-        if let Ok(entries) = read_dir(self.load_dirs.clone()) {
-            let dirs: Vec<String> = entries
-                .filter(|a| a.is_ok())
-                .map(|a| a.unwrap())
-                .filter(|a| a.path().is_dir())
-                .map(|a| a.path().file_name().unwrap().to_string_lossy().to_string())
-                .collect();
-            if dirs.len() > 0 {
-                return Some(dirs);
-            }
-        }
-        None
+        let walker = WalkDir::new(self.load_dirs.clone());
+        let dirs = walker
+            .into_iter()
+            .filter_map(|e| e.ok())
+            .filter(|e| e.path().is_dir())
+            .map(|e| e.path().to_string_lossy().to_string())
+            .collect();
+        return Some(dirs);
     }
 
     pub fn load_manager_mut(&mut self) -> &mut LoadManager {
@@ -89,9 +86,7 @@ impl GlobOrDirLoader {
     ) -> Option<Vec<String>> {
         if let Some(dirs) = self.dirs_from_load_dir() {
             if let Some(loading_from) = dirs.iter().find(|&d| *d == chosen) {
-                if let Ok(entries) =
-                    read_dir(Path::new(self.load_manager().data_path().as_str()).join(loading_from))
-                {
+                if let Ok(entries) = read_dir(Path::new(loading_from)) {
                     let files: Vec<String> = entries
                         .filter(|e| e.is_ok())
                         .map(|e| e.unwrap().path())
@@ -112,6 +107,7 @@ impl GlobOrDirLoader {
                                 .to_string()
                         })
                         .collect();
+                    println!("{:?}", files);
                     return Some(files);
                 }
             }

@@ -171,7 +171,6 @@ fn spawn_world(
     commands.insert_resource(pool.clone());
 }
 
-//FIXME move all this out into stepper.rs, or something
 fn handle_actions(
     mut commands: Commands,
     mut actions: ResMut<Actions>,
@@ -193,6 +192,7 @@ fn handle_actions(
         mesh_pool.redraw(&mut commands, &*meshes, material);
         actions.reset = false;
     }
+
     mesh_pool.num_fluids = meshes.loaded.len();
 
     let load_manager = glob_or_dir_loader.load_manager_mut();

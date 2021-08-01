@@ -54,7 +54,8 @@ parry3d = { version = "0.5", features = ["serde-serialize"] }
 
 serde = "1"
 serde_json = "1"
-ron = { version = "0.6"}#, features = [ "serde" ] }
+ron = { version = "0.6"}
+walkdir = "2.3"
 
 [build-dependencies]
 embed-resource = "1.6"
