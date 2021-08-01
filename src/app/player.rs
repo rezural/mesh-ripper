@@ -220,7 +220,7 @@ fn handle_actions(
 
         if let Some(dataset) = actions.datasets.selected_value() {
             if let Ok(dir) = std::env::current_dir() {
-                let dataset_dir = dir.join("assets/data").join(dataset);
+                let dataset_dir = dir.join(dataset);
                 if let Ok(config) = std::fs::read_to_string(dataset_dir.join("mr-config.ron")) {
                     if let Ok(config) = ron::from_str::<Actions>(config.as_str()) {
                         println!("got config");

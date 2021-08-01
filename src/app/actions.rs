@@ -109,8 +109,6 @@ impl Default for State {
     }
 }
 
-// impl Default for CameraSystem {}
-
 fn set_movement_actions(
     mut commands: Commands,
     mut actions: ResMut<Actions>,
@@ -206,14 +204,14 @@ fn camera_timeline_system(
         if keyboard_input.just_pressed(KeyCode::S) {
             if let Some(data_dir) = actions.datasets.selected_value() {
                 if let Ok(root) = std::env::current_dir() {
-                    let dir_path = root.join("assets/data").join(data_dir);
+                    let dir_path = root.join(data_dir);
                     println!("dir_path: {}", dir_path.to_string_lossy());
                     if let Ok(config) = ron::ser::to_string_pretty(&*actions, Default::default()) {
                         match std::fs::write(dir_path.join("mr-config.ron"), config) {
                             Ok(_) => {
                                 println!("Saved config Successfully")
                             }
-                            Err(_) => todo!(),
+                            Err(e) => println!("Couldn't save config: {:?}", e),
                         }
                     }
                     if let Ok(camera_config) =
@@ -223,7 +221,7 @@ fn camera_timeline_system(
                             Ok(_) => {
                                 println!("Saved camera config Successfully")
                             }
-                            Err(_) => todo!(),
+                            Err(e) => println!("Couldn't save camera config: {:?}", e),
                         }
                     }
                 }
