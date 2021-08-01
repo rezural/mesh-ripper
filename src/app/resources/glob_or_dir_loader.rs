@@ -48,7 +48,7 @@ impl GlobOrDirLoader {
     }
 
     pub fn dirs_from_load_dir(&self) -> Option<Vec<String>> {
-        let walker = WalkDir::new(self.load_dirs.clone());
+        let walker = WalkDir::new(self.load_dirs.clone()).follow_links(true);
         let dirs = walker
             .into_iter()
             .filter_map(|e| e.ok())
