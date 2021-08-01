@@ -123,6 +123,15 @@ impl MeshPool {
         }
     }
 
+    pub fn clear(
+        &mut self,
+        commands: &mut Commands,
+    ) {
+        self.despawn_mesh(commands);
+        self.current_mesh_handle = None;
+        self.current_mesh_index = 0;
+    }
+
     pub fn redraw(
         &mut self,
         commands: &mut Commands,

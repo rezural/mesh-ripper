@@ -209,6 +209,7 @@ fn handle_actions(
 
     // if the user has chosen a different data dir
     if actions.datasets.changed() {
+        glob_or_dir_loader.load_manager_mut().clear();
         glob_or_dir_loader.update(
             config.file_glob.clone(),
             actions.datasets.selected_value(),

@@ -107,7 +107,6 @@ impl GlobOrDirLoader {
                                 .to_string()
                         })
                         .collect();
-                    println!("{:?}", files);
                     return Some(files);
                 }
             }
