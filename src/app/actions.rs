@@ -257,6 +257,6 @@ fn camera_timeline_system(
 }
 
 fn state_plumbing(mut camera_system: ResMut<CameraSystem>) {
-    println!("refresh current timeline");
+    // println!("refresh current timeline");
     camera_system.refresh_current_timeline();
 }
