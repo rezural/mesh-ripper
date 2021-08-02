@@ -6,8 +6,10 @@ use serde::*;
 
 #[derive(Inspectable, Debug, Serialize, Deserialize)]
 pub struct CameraSystem {
+    #[serde(skip)]
     pub record_mode: bool,
     pub show_camera_visualization: bool,
+    #[serde(skip)]
     pub follow_camera: bool,
     #[serde(skip)]
     pub current_transform: Transform,
