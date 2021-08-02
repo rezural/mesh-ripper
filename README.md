@@ -7,11 +7,21 @@ This is a a mesh series viewer for output from fluids simulations etc.
 This currently only supports obj files. More coming soon.
 
 ## Installation / Run
+### Windows & MacOSX
+
+Windows and MacOSX binaries are build with CI, but currently largely untested. It has been used on windows. Please test and send any information.
+
+### Linux
+
+At the moment, just clone the repository, and `cargo run`:
 
 ```sh
-    git clone https://github.com/rezural/mesh-ripper.git
-    cargo run --release -- --features=native ./assets/data/<YOUR_DATA_DIR>
+git clone https://github.com/rezural/mesh-ripper.git
+cd mesh-ripper
+cargo run  --features=native --release --bin mesh-ripper
 ```
+
+I will publish to cargo when it gets more feature complete.
 
 ## File Format Support
 
@@ -21,28 +31,99 @@ Supported formats:
     * Stl
     * (probably gltf, havent tested yet)
 
-### Showcase
+## Showcase
 
 Here are a couple of videos showing the performance, and capabilities of mesh-ripper:
 
-[Fluid in a box] (https://youtu.be/AHtn9A5XsTw)
+[Fluid in a box](https://youtu.be/AHtn9A5XsTw)
 
 This shows the camera pose recording system.
 
-[Strange Attractors] (https://youtu.be/l4Q5ClC5F44)
+[Strange Attractors](https://youtu.be/l4Q5ClC5F44)
 
-Interesting particle attractor system being visualized.
+Particle attractor system being visualized.
+
+## Usage / Keybindings
+
+Currently, data needs to go within assets/data of where the binary is (or the source directory if running with cargo run).
+
+Mesh Ripper will walk the directories found within, allowing you to choose one from the `Load From Dataset` option.
+
+![Mesh Ripper Screenshot](./assets/docs/screenshot.png)
+
+Once you select a dataset that contains ply, obj, or stl files, ordered by number (alphanumeric ordering), Mesh Ripper will load 100 files from this directory, spread across the available files.
+
+Select a higher `# of Frames to Load` to load more files. See algorithm for the LOD file loading.
+
+### Camera
+
+The camera is initially unlocked, press the Left mouse button to enter into game/fly mode. Press Esc to unlock the mouse.
+
+Mesh Ripper uses a FPS style, Mouse look system.
+
+W A S D to move around.
+
+Q & E to move up and down.
+
+CTRL-R to reset camera on the current mesh.
+
+### Play
+
+Press spacebar to play, or Disable the paused checkbox in actions.
+
+Press T & B to set to play forward, and backwards. Or select the appropriate `frame_delay` in actions.
+
+Press R to reset to the first frame. Or select the `pause` checkbox in actions.
+
+Press F & G to increase & decrease the frame rate, or click and drag `advance_every` in actions
+
+When paused, press <- and -> keys to retreat and advance.
+
+### Visualization Settings
+
+The mesh color can be set from the `mesh_color` in actions.
+
+Enable `spot_lighting` to setup brighter lights, and set the lighting_intensity appropriately.
+
+Change the `material_roughness` to make reflections 'fuzzier'.
+
+## Camera Mode
+
+Select `record_mode` in the CameraSystem pane. Please note that this will force a load of every frame available, which may take a long time, and/or cause Mesh Ripper to become laggy, if it exhausts available RAM on the GPU.
+
+This is a limitation, but will be fixed in the near future.
+
+When playing, or paused, orient the camera to where you want the camera pose to be at that frame, and press C to save it at that point in time.
+
+I tend to pause, move to the right frame using <- and ->, orient correctly, and then repeat.
+
+Select `show_camera_visualization` option, to show the orientation of each recorded camera pose, and the interpolated camera between these frames.
+
+Select `follow_camera` to follow the camera at it's interpolated position at each frame.
+
+You can add any number of camera timelines, and select the current one using `current_timeline`
+
+You can see the available `camera_timelines`, where you can remove individual cameras by clicking on the X.
+
+## Saving settings and camera poses
+
+CTRL-S will save a mr-config.ron, and mr-camera-config.ron file to the data directory currently chosen.
 
 ## TODO
 
-- [ ] Better Camera System
+- [ ] CTRL-R & actions settings to center camera on current mesh
+- [ ] Publish to cargo
+- [ ] Better Mouse/Camera System (FPS & Orbit)
+- [ ] Show available frames in a horizontal bar. ability to select start and end frames (per camera?). Scrobbing.
 - [ ] Support for points from stl, ply, vtk, obj
   - [ ] Visualization of points with spheres & arrows where there is velocity & acceleration data
   - [ ] Look into shader to do same
+- [ ] Profiling code, debugging is flakey so profiling code goes a long way to be able to println debug
 - [ ] Ability to load files outside of assets
 - [ ] Arbitrary nesting of directories to select from, ability to select more than one series
 - [ ] Ability to load more than one static files (i.e. landscape)
 - [ ] File picking dialog
+- [ ] Allow to set via actions the initial load LOD
 - [ ] Moving mouse on advance_every should increase in .01 - .0025 increments
 - [ ] Move to smooth-bevy-cameras
 - [ ] Look towards some point on the mesh (or center of mesh, expensive though) on startup, a little above, in front 
