@@ -53,6 +53,13 @@ where
     pub fn changed(&self) -> bool {
         self.changed
     }
+
+    pub fn set_from(
+        &mut self,
+        from: Vec<T>,
+    ) {
+        self.from = from;
+    }
 }
 
 impl<T> Default for VecAsDropdown<T>

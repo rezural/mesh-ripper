@@ -20,6 +20,7 @@ impl Plugin for ActionsPlugin {
             SystemSet::on_update(GameState::Playing)
                 .with_system(set_movement_actions.system())
                 .with_system(camera_timeline_system.system())
+                .with_system(state_plumbing.system())
                 .after("update_mesh"),
         );
         app.init_resource::<Actions>().init_resource::<State>();
@@ -253,4 +254,9 @@ fn camera_timeline_system(
             }
         }
     }
+}
+
+fn state_plumbing(mut camera_system: ResMut<CameraSystem>) {
+    println!("refresh current timeline");
+    camera_system.refresh_current_timeline();
 }

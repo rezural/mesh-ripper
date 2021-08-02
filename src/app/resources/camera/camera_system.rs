@@ -11,8 +11,8 @@ pub struct CameraSystem {
     pub follow_camera: bool,
     #[serde(skip)]
     pub current_transform: Transform,
-    pub camera_timelines: Vec<(String, CameraTimeline)>,
     pub current_timeline: VecAsDropdown<String>,
+    pub camera_timelines: Vec<(String, CameraTimeline)>,
 }
 
 impl CameraSystem {
@@ -46,6 +46,17 @@ impl CameraSystem {
             return Some(ct);
         }
         None
+    }
+
+    pub fn refresh_current_timeline(&mut self) {
+        let from = self
+            .camera_timelines
+            .iter()
+            .map(|(name, _)| name)
+            .cloned()
+            .collect();
+
+        self.current_timeline.set_from(from);
     }
 }
 
