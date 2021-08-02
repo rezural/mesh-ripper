@@ -21,6 +21,18 @@ Supported formats:
     * Stl
     * (probably gltf, havent tested yet)
 
+### Showcase
+
+Here are a couple of videos showing the performance, and capabilities of mesh-ripper:
+
+[Fluid in a box] (https://youtu.be/AHtn9A5XsTw)
+
+This shows the camera pose recording system.
+
+[Strange Attractors] (https://youtu.be/l4Q5ClC5F44)
+
+Interesting particle attractor system being visualized.
+
 ## TODO
 
 - [ ] Better Camera System
@@ -45,6 +57,7 @@ Supported formats:
 - [x] Esc to get out of mouse mode
 - [x] show first frame on startup
 - [x] Better Loading of assets
+
 
 ## BUGS
 - [ ] camera follows mouse on load
