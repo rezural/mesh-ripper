@@ -9,7 +9,7 @@ This currently only supports obj files. More coming soon.
 ## Installation / Run
 ### Windows & MacOSX
 
-Windows and MacOSX binaries are build with CI, but currently largely untested. It has been used on windows. Please test and send any information.
+Windows and MacOSX binaries are built with CI, but currently largely untested. It has been used on windows. Please test and send any information.
 
 ### Linux
 
@@ -45,13 +45,15 @@ Particle attractor system being visualized.
 
 ## Usage / Keybindings
 
-Currently, data needs to go within assets/data of where the binary is (or the source directory if running with cargo run).
+Currently, data needs to go within `assets/data` of where the binary is (or the source directory if running with cargo run).
 
-Mesh Ripper will walk the directories found within, allowing you to choose one from the `Load From Dataset` option.
+Mesh Ripper will walk the directories found within `assets/data`, allowing you to choose one from the `Load From Dataset` option.
 
 ![Mesh Ripper Screenshot](./assets/docs/screenshot.png)
 
-Once you select a dataset that contains ply, obj, or stl files, ordered by number (alphanumeric ordering), Mesh Ripper will load 100 files from this directory, spread across the available files.
+Once you select a dataset that contains ply, obj, or stl files, ordered by number (alphanumeric ordering), Mesh Ripper will load 100 files from this directory, spread evenly across the available files.
+
+`fluid_loaded`, and `fluids_loaded_percent` show the number / percentage of files that have been loaded.
 
 Select a higher `# of Frames to Load` to load more files. See algorithm for the LOD file loading.
 
@@ -71,7 +73,7 @@ CTRL-R to reset camera on the current mesh.
 
 Press spacebar to play, or Disable the paused checkbox in actions.
 
-Press T & B to set to play forward, and backwards. Or select the appropriate `frame_delay` in actions.
+Press T & B to set to play forward, and backwards. Or select the appropriate `frame_direction` in actions.
 
 Press R to reset to the first frame. Or select the `pause` checkbox in actions.
 
@@ -83,9 +85,13 @@ When paused, press <- and -> keys to retreat and advance.
 
 The mesh color can be set from the `mesh_color` in actions.
 
+Opacity can be set in actions Click-drag to edit this value, or enter it directly.
+
 Enable `spot_lighting` to setup brighter lights, and set the lighting_intensity appropriately.
 
 Change the `material_roughness` to make reflections 'fuzzier'.
+
+Click on `show_axis` in actions to show the xyz axis and origin.
 
 ## Camera Mode
 
