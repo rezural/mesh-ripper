@@ -4,8 +4,6 @@ Rips Meshes
 
 This is a a mesh series viewer for output from fluids simulations etc.
 
-This currently only supports obj files. More coming soon.
-
 [](https://youtu.be/l4Q5ClC5F44)
 [![Strange Attractors](https://img.youtube.com/vi/l4Q5ClC5F44/maxresdefault.jpg)](https://youtu.be/l4Q5ClC5F44)
 
@@ -32,7 +30,6 @@ Supported formats:
     * Ply
     * Obj
     * Stl
-    * (probably gltf, havent tested yet)
 
 ## Showcase
 
