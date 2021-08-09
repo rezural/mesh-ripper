@@ -104,9 +104,7 @@ impl LoadManager {
     }
 
     pub fn highest_lod(&mut self) {
-        while let Some(next_lod) = self.load_iterator.next_lod() {
-            self.load_iterator = next_lod;
-        }
+        self.load_iterator = self.load_iterator.highest_lod();
     }
 
     pub fn reload(

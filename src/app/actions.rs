@@ -188,17 +188,22 @@ fn camera_timeline_system(
     if camera_system.record_mode {
         // we need the highest LOD
         let load_manager = (&mut *loader).load_manager_mut();
-        load_manager.highest_lod();
         load_manager.reload(&*asset_server);
+        let load_iterator = &loader.load_manager().load_iterator;
+
         if let Some(timeline) = camera_system.enabled_timeline_mut() {
             if keyboard_input.just_pressed(KeyCode::C) {
                 if let Ok((_, transform)) = query.single_mut() {
                     let camera_pose = transform;
-                    timeline.add_frame(pool.current_mesh_index, *camera_pose);
+                    timeline.add_frame(
+                        load_iterator.full_index_from_lod_index(pool.current_mesh_index),
+                        *camera_pose,
+                    );
                 }
             }
         }
     }
+    let load_iterator = &loader.load_manager().load_iterator;
 
     // fixme move to config_save_system
     if keyboard_input.pressed(KeyCode::LControl) {
@@ -231,10 +236,12 @@ fn camera_timeline_system(
     }
 
     if camera_system.show_camera_visualization {
+        //FIXME: we should try to detect if we need to despawn the current visualization (i.e. cameras removed/added)
+        // and only despawn the current camera position
         visualization.despawn(&*camera_system, &mut commands);
         visualization.spawn(
             &*camera_system,
-            pool.current_mesh_index,
+            load_iterator.full_index_from_lod_index(pool.current_mesh_index),
             &mut commands,
             materials,
             meshes,
@@ -245,10 +252,11 @@ fn camera_timeline_system(
 
     if camera_system.follow_camera {
         if let Ok((_, mut transform)) = query.single_mut() {
-            if let Some(timeline_transform) = camera_system
-                .enabled_timeline()
-                .and_then(|ctl| ctl.transform_at_frame(pool.current_mesh_index))
-            {
+            if let Some(timeline_transform) = camera_system.enabled_timeline().and_then(|ctl| {
+                ctl.transform_at_frame(
+                    load_iterator.full_index_from_lod_index(pool.current_mesh_index),
+                )
+            }) {
                 *transform = CameraFrame::isometry_to_transform(timeline_transform);
                 camera_system.current_transform = transform.clone();
             }

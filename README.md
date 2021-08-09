@@ -117,25 +117,33 @@ CTRL-S will save a mr-config.ron, and mr-camera-config.ron file to the data dire
 
 ## TODO
 
-- [ ] CTRL-R & actions settings to center camera on current mesh
-- [ ] Publish to cargo
+- [ ] Profiling code, debugging is flakey so profiling code goes a long way as an alternative to println debugging
 - [ ] Better Mouse/Camera System (FPS & Orbit)
-- [ ] Show available frames in a horizontal bar. ability to select start and end frames (per camera?). Scrobbing.
+  - [ ] Move to smooth-bevy-cameras
+- [ ] Release mouse when focus lost
+- [ ] Allow to set via actions the initial load LOD
+- [ ] CTRL-R & actions settings to center camera on current mesh
 - [ ] Support for points from stl, ply, vtk, obj
   - [ ] Visualization of points with spheres & arrows where there is velocity & acceleration data
   - [ ] Look into shader to do same
-- [ ] Profiling code, debugging is flakey so profiling code goes a long way to be able to println debug
-- [ ] Ability to load files outside of assets
-- [ ] Arbitrary nesting of directories to select from, ability to select more than one series
+- [ ] Ability to select more than one series
 - [ ] Ability to load more than one static files (i.e. landscape)
-- [ ] File picking dialog
-- [ ] Allow to set via actions the initial load LOD
 - [ ] Moving mouse on advance_every should increase in .01 - .0025 increments
-- [ ] Move to smooth-bevy-cameras
-- [ ] Look towards some point on the mesh (or center of mesh, expensive though) on startup, a little above, in front 
-- [ ] Release mouse when focus lost
-- [ ] More file format support (3d meshes) like vtk, gltf et al. (Currently stl, ply, obj)
+
+## Backlog
+
+- [ ] Publish to cargo
+- [ ] Show available frames in a horizontal bar. ability to select start and end frames (per camera?). Scrobbing.
+- [ ] File picking dialog
 - [ ] Load and cache from urls
+- [ ] More file format support (3d meshes) like vtk, gltf et al. (Currently stl, ply, obj)
+- [ ] Ability to load files outside of assets
+
+## Done
+
+- [X] Camera system is able to record the correct frame, when not all frames are loaded
+- [X] Arbitrary nesting of directories to select from
+- [X] Look towards some point on the mesh (or center of mesh, expensive though) on startup, a little above, in front 
 - [X] Save/load from config directory
 - [X] Recording Camera locations & Interpolation
 - [X] Add lights
@@ -144,7 +152,6 @@ CTRL-S will save a mr-config.ron, and mr-camera-config.ron file to the data dire
 - [x] Esc to get out of mouse mode
 - [x] show first frame on startup
 - [x] Better Loading of assets
-
 
 ## BUGS
 - [ ] camera follows mouse on load

@@ -129,6 +129,24 @@ where
         lods
     }
 
+    pub fn highest_lod(&self) -> MidpointIterator<T> {
+        let mut iterator = self.clone();
+        while let Some(next_lod) = self.next_lod() {
+            iterator = next_lod;
+        }
+        iterator
+    }
+
+    /// This will return the index from within the highest LOD
+    /// i.e. we have loaded 10 files, but their indexes in the highest LOD are [0, 10, 20, 30...]
+    // if there are a hundred files in the highest LOD, so [0->0, 1->10, 2->20]
+    pub fn full_index_from_lod_index(
+        &self,
+        index: usize,
+    ) -> usize {
+        self.indices[index]
+    }
+
     pub fn is_saturated(&self) -> bool {
         self.indices.len() == self.inner.len()
     }
@@ -178,10 +196,8 @@ where
     type Item = T;
 
     fn next(&mut self) -> Option<Self::Item> {
-        let index = self.indices.get(self.current_index);
-        if let Some(index) = index {
-            let next = self.inner.get(*index);
-            if let Some(next) = next {
+        if let Some(index) = self.indices.get(self.current_index) {
+            if let Some(next) = self.inner.get(*index) {
                 self.current_index = self.current_index + 1;
                 return Some((*next).clone());
             }
@@ -214,9 +230,7 @@ mod tests {
         let mpi = mpi.next_lod().unwrap();
         assert_eq!(mpi.len(), 3);
 
-        if let Some(_) = mpi.next_lod() {
-            assert!(false)
-        }
+        assert_eq!(None, mpi.next_lod())
     }
 
     #[test]
@@ -239,9 +253,7 @@ mod tests {
         let mpi = mpi.next_lod().unwrap();
         assert_eq!(mpi.len(), 100);
 
-        if let Some(_) = mpi.next_lod() {
-            assert!(false)
-        }
+        assert_eq!(None, mpi.next_lod())
     }
 
     #[test]
@@ -270,6 +282,8 @@ mod tests {
 
         let mpi = mpi.next_lod().unwrap();
         assert_eq!(mpi.len(), 1000);
+
+        assert_eq!(None, mpi.next_lod())
     }
 
     #[test]
@@ -281,12 +295,18 @@ mod tests {
         assert_eq!(None, mpi.next_lod());
     }
 
-    // #[test]
-    // fn test_adding_new_elements_and_initialize_works() {
-    //     let ten = ["a"; 10];
-    //     let mut mpi = MidpointIterator::new(ten.into(), 20);
-    //     mpi.push("b");
-    //     mpi.reinitialize();
-    //     assert_eq!(mpi.len(), 11);
-    // }
+    #[test]
+    fn test_full_index_from_lod_index() {
+        let ten = ["a"; 10];
+        let mpi = MidpointIterator::new(ten.into(), 5);
+
+        let index_map = [0, 1, 2, 3, 4];
+        let expected = index_map.iter().map(|i| i * 2);
+        let output = index_map.iter().map(|i| mpi.full_index_from_lod_index(*i));
+
+        assert_eq!(expected.len(), output.len());
+        for r in expected.zip(output) {
+            assert_eq!(r.0, r.1);
+        }
+    }
 }
