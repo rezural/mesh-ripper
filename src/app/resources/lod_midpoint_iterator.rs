@@ -17,7 +17,7 @@ where
     inner: Vec<T>,
     indices: Vec<usize>,
     current_index: usize,
-    first_lod: usize,
+    pub first_lod: usize,
 }
 
 impl<T> MidpointIterator<T>

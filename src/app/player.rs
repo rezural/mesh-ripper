@@ -138,6 +138,7 @@ fn check_lights(
         }
     }
 }
+
 fn spawn_camera(
     mut commands: Commands,
     mut ambient_light: ResMut<AmbientLight>,
@@ -216,6 +217,10 @@ fn handle_actions(
             load_manager.next_lod_and_reload(&asset_server);
             meshes.loading = load_manager.loading.clone();
         }
+    }
+
+    if actions.initial_lod != load_manager.load_iterator.first_lod {
+        load_manager.load_iterator.first_lod = actions.initial_lod;
     }
 
     // if the user has chosen a different data dir

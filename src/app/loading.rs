@@ -77,10 +77,11 @@ fn register_initial_resources(
     mut materials: ResMut<Assets<StandardMaterial>>,
     mut state: ResMut<State<GameState>>,
     asset_server: Res<AssetServer>,
+    actions: Res<Actions>,
 ) {
     // load files
     let load_files: Vec<String> = Vec::new();
-    let load_iterator = MidpointIterator::new(load_files, config.load_max);
+    let load_iterator = MidpointIterator::new(load_files, actions.initial_lod);
     let load_manager = LoadManager::new(load_iterator);
     let mut glob_or_dir_loader = GlobOrDirLoader::new(
         load_manager,

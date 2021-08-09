@@ -120,8 +120,6 @@ CTRL-S will save a mr-config.ron, and mr-camera-config.ron file to the data dire
 - [ ] Profiling code, debugging is flakey so profiling code goes a long way as an alternative to println debugging
 - [ ] Better Mouse/Camera System (FPS & Orbit)
   - [ ] Move to smooth-bevy-cameras
-- [ ] Release mouse when focus lost
-- [ ] Allow to set via actions the initial load LOD
 - [ ] CTRL-R & actions settings to center camera on current mesh
 - [ ] Support for points from stl, ply, vtk, obj
   - [ ] Visualization of points with spheres & arrows where there is velocity & acceleration data
@@ -141,6 +139,8 @@ CTRL-S will save a mr-config.ron, and mr-camera-config.ron file to the data dire
 
 ## Done
 
+- [X] Allow to set via actions the initial load LOD
+- [X] Release mouse when focus lost
 - [X] Camera system is able to record the correct frame, when not all frames are loaded
 - [X] Arbitrary nesting of directories to select from
 - [X] Look towards some point on the mesh (or center of mesh, expensive though) on startup, a little above, in front 

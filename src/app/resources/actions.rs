@@ -19,6 +19,8 @@ pub struct Actions {
     pub fluid_color: Color,
     #[inspectable(min = 0.0, max = 1.0, speed = 0.01)]
     pub opacity: f32,
+    #[inspectable(label = "# Frames to Initially Load")]
+    pub initial_lod: usize,
     #[inspectable(label = "# of Frames to Load")]
     #[serde(skip)]
     pub load_number_of_frames: VecAsDropdown<usize>,
@@ -49,6 +51,7 @@ impl Default for Actions {
             reload: false,
             fluid_color: Color::rgb(95. / 255., 133. / 255., 194. / 255.),
             opacity: 1.0,
+            initial_lod: 100,
             load_number_of_frames: VecAsDropdown::default(),
             datasets: VecAsDropdown::default(),
             current_file: String::from(""),
