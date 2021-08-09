@@ -1,5 +1,6 @@
 use super::loading::MeshAssets;
 use super::resources::actions::{Actions, FrameDirection, State as AppState};
+use super::resources::camera::CameraSystem;
 use super::resources::mesh_pool::MeshPool;
 use super::GameState;
 use bevy::prelude::*;
@@ -26,6 +27,7 @@ fn set_movement_actions(
     mut mesh_pool: ResMut<MeshPool>,
     fluid_assets: ResMut<MeshAssets>,
     materials: ResMut<Assets<StandardMaterial>>,
+    mut camera_system: ResMut<CameraSystem>,
 ) {
     if keyboard_input.just_pressed(KeyCode::T) {
         actions.frame_direction = FrameDirection::Forward;
@@ -75,6 +77,12 @@ fn set_movement_actions(
             actions.advance_every += 0.01;
         } else {
             actions.advance_every += 0.001;
+        }
+    }
+
+    if keyboard_input.just_pressed(KeyCode::C) {
+        if keyboard_input.pressed(KeyCode::LControl) {
+            camera_system.follow_camera = !camera_system.follow_camera;
         }
     }
 }

@@ -44,7 +44,8 @@ fn camera_timeline_system(
         let load_iterator = &loader.load_manager().load_iterator;
 
         if let Some(timeline) = camera_system.enabled_timeline_mut() {
-            if keyboard_input.just_pressed(KeyCode::C) {
+            if keyboard_input.just_pressed(KeyCode::C) && !keyboard_input.pressed(KeyCode::LControl)
+            {
                 if let Ok((_, transform)) = query.single_mut() {
                     let camera_pose = transform;
                     timeline.add_frame(
