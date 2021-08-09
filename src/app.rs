@@ -1,18 +1,18 @@
 pub mod actions;
+pub mod input;
 pub mod inspector;
 pub mod loading;
-pub mod menu;
 pub mod player;
 pub mod resources;
 
-use actions::Actions;
 use actions::ActionsPlugin;
 use bevy::app::AppBuilder;
+use input::InputPlugin;
 use loading::LoadingPlugin;
-use menu::MenuPlugin;
 use player::PlayerPlugin;
 use resources::camera::*;
 
+use resources::actions::Actions;
 // use bevy::diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin};
 use bevy::prelude::*;
 use bevy_gizmos::*;
@@ -30,7 +30,6 @@ enum GameState {
     RegisterInitialResources,
     Loading,
     Playing,
-    Menu,
 }
 
 #[derive(StructOpt, Debug)]
@@ -60,9 +59,9 @@ impl Plugin for GamePlugin {
     ) {
         app.add_state(GameState::RegisterInitialResources)
             .add_plugin(LoadingPlugin)
-            .add_plugin(ActionsPlugin)
-            .add_plugin(MenuPlugin)
+            .add_plugin(InputPlugin)
             .add_plugin(PlayerPlugin)
+            .add_plugin(ActionsPlugin)
             // Widgets & Gizmos
             .add_plugin(GizmosPlugin)
             // Inspectable

@@ -5,10 +5,10 @@ use std::path::Path;
 use super::resources::background_meshes::BackgroundMeshes;
 use super::GameState;
 use super::{
-    actions::Actions, loading::paths::PATHS, resources::lod_midpoint_iterator::MidpointIterator,
-    AppOptions,
+    loading::paths::PATHS, resources::lod_midpoint_iterator::MidpointIterator, AppOptions,
 };
 use crate::app::inspector::vec_as_dropdown::VecAsDropdown;
+use crate::app::resources::actions::Actions;
 use crate::app::resources::asset_load_checker::{AssetLoadChecker, LoadingSource};
 use crate::app::resources::glob_or_dir_loader::GlobOrDirLoader;
 use crate::app::resources::load_manager::LoadManager;

@@ -1,7 +1,7 @@
 use std::time::Duration;
 
-use super::actions::State as AppState;
 use super::inspector::vec_as_dropdown::VecAsDropdown;
+use super::resources::actions::{Actions, State as AppState};
 use super::resources::asset_load_checker::AssetLoadChecker;
 use super::resources::background_meshes::BackgroundMeshes;
 use super::resources::camera::CameraSystem;
@@ -9,7 +9,7 @@ use super::resources::glob_or_dir_loader::GlobOrDirLoader;
 use super::resources::mesh_aabb_estimator::MeshAABBEstimator;
 use super::resources::mesh_pool::MeshPool;
 use super::GameState;
-use super::{actions::Actions, loading::MeshAssets, AppOptions};
+use super::{loading::MeshAssets, AppOptions};
 use bevy::{pbr::AmbientLight, prelude::*, render::camera::PerspectiveProjection};
 use bevy_fly_camera::{FlyCamera, FlyCameraPlugin};
 use bevy_inspector_egui::bevy_egui::EguiContext;

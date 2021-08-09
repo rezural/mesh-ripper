@@ -1,6 +1,7 @@
 use std::time::Duration;
 
-use crate::app::{actions::FrameDirection, loading::MeshAssets};
+use crate::app::loading::MeshAssets;
+use crate::app::resources::actions::FrameDirection;
 use bevy::prelude::*;
 
 #[derive(Clone)]
