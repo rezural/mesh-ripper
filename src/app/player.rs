@@ -10,6 +10,8 @@ use super::resources::mesh_aabb_estimator::MeshAABBEstimator;
 use super::resources::mesh_pool::MeshPool;
 use super::GameState;
 use super::{loading::MeshAssets, AppOptions};
+use bevy::app::Events;
+use bevy::window::WindowFocused;
 use bevy::{pbr::AmbientLight, prelude::*, render::camera::PerspectiveProjection};
 use bevy_fly_camera::{FlyCamera, FlyCameraPlugin};
 use bevy_inspector_egui::bevy_egui::EguiContext;
@@ -65,6 +67,7 @@ fn cursor_grab_system(
     key: Res<Input<KeyCode>>,
     mut query: Query<&mut FlyCamera>,
     ui_context: Res<EguiContext>,
+    focus_events: Res<Events<WindowFocused>>,
 ) {
     let window = windows.get_primary_mut().unwrap();
     for mut camera in query.iter_mut() {
@@ -76,7 +79,15 @@ fn cursor_grab_system(
             }
         }
 
-        if key.just_pressed(KeyCode::Escape) {
+        let mut focus_lost = false;
+        let mut reader = focus_events.get_reader();
+        for event in reader.iter(&focus_events) {
+            if !event.focused {
+                focus_lost = true;
+            }
+        }
+
+        if key.just_pressed(KeyCode::Escape) || focus_lost {
             window.set_cursor_lock_mode(false);
             window.set_cursor_visibility(true);
             camera.enabled = false;
