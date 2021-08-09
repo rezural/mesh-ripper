@@ -105,7 +105,7 @@ I tend to pause, move to the right frame using <- and ->, orient correctly, and 
 
 Select `show_camera_visualization` option, to show the orientation of each recorded camera pose, and the interpolated camera between these frames.
 
-Select `follow_camera` to follow the camera at it's interpolated position at each frame.
+Select `follow_camera` to follow the camera at it's interpolated position at each frame. You can also press CTRL-C
 
 You can add any number of camera timelines, and select the current one using `current_timeline`
 

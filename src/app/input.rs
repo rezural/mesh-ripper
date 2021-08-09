@@ -65,10 +65,14 @@ fn set_movement_actions(
     }
 
     if keyboard_input.just_pressed(KeyCode::F) {
-        if actions.advance_every > 0.019 {
-            actions.advance_every -= 0.01;
+        if keyboard_input.pressed(KeyCode::LControl) {
+            actions.focus_on_mesh = true;
         } else {
-            actions.advance_every -= 0.001;
+            if actions.advance_every > 0.019 {
+                actions.advance_every -= 0.01;
+            } else {
+                actions.advance_every -= 0.001;
+            }
         }
     }
 

@@ -1,6 +1,8 @@
+use super::loading::MeshAssets;
 use super::resources::actions::{Actions, State as AppState};
 use super::resources::camera::*;
 use super::resources::glob_or_dir_loader::GlobOrDirLoader;
+use super::resources::mesh_lookat_estimator::MeshLookAtEstimator;
 use super::resources::mesh_pool::MeshPool;
 use super::GameState;
 use bevy::prelude::*;
@@ -33,7 +35,8 @@ fn camera_timeline_system(
     mut loader: ResMut<GlobOrDirLoader>,
     pool: ResMut<MeshPool>,
     asset_server: Res<AssetServer>,
-    actions: Res<Actions>,
+    mut actions: ResMut<Actions>,
+    fluid_assets: ResMut<MeshAssets>,
     // time: Res<Time>,
 ) {
     // println!("camera-timeline-system: {:?}", time.time_since_startup());
@@ -86,6 +89,19 @@ fn camera_timeline_system(
                 }
             }
         }
+    }
+
+    if actions.focus_on_mesh {
+        if let Some(current_mesh) = pool.current_mesh(&fluid_assets) {
+            if let Some(mesh) = meshes.get(current_mesh.1.clone()) {
+                if let Ok((_, mut transform)) = query.single_mut() {
+                    if let Some(new_transform) = MeshLookAtEstimator::transform(mesh) {
+                        (*transform) = new_transform;
+                    }
+                }
+            }
+        }
+        actions.focus_on_mesh = false;
     }
 
     if camera_system.show_camera_visualization {

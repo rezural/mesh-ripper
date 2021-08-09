@@ -7,6 +7,7 @@ use super::resources::background_meshes::BackgroundMeshes;
 use super::resources::camera::CameraSystem;
 use super::resources::glob_or_dir_loader::GlobOrDirLoader;
 use super::resources::mesh_aabb_estimator::MeshAABBEstimator;
+use super::resources::mesh_lookat_estimator::MeshLookAtEstimator;
 use super::resources::mesh_pool::MeshPool;
 use super::GameState;
 use super::{loading::MeshAssets, AppOptions};
@@ -351,17 +352,11 @@ fn check_mesh_assets(
             pool.update_fluid(&mut commands, &fluid_assets, material, time.delta());
             if let Some(current_mesh) = pool.current_mesh(&fluid_assets) {
                 if !have_displayed {
-                    if let Some(aabb) = meshes
-                        .get(current_mesh.1.clone())
-                        .and_then(|mesh| MeshAABBEstimator::aabb(mesh))
-                    {
-                        let eye = MeshAABBEstimator::pose_from_aabb(&aabb);
-                        let target = aabb.center();
-
+                    if let Some(mesh) = meshes.get(current_mesh.1.clone()) {
                         if let Ok((_, mut transform)) = query.single_mut() {
-                            (*transform) =
-                                Transform::from_translation(Vec3::new(eye.x, eye.y, eye.z))
-                                    .looking_at(Vec3::new(target.x, target.y, target.z), Vec3::Y);
+                            if let Some(new_transform) = MeshLookAtEstimator::transform(mesh) {
+                                (*transform) = new_transform;
+                            }
                         }
                     }
                 }
