@@ -34,7 +34,6 @@ pub struct Actions {
     pub lighting_intensity: f32,
     #[inspectable(min = 0.0, max = 1.0, speed = 0.01)]
     pub material_roughness: f32,
-    pub camera_mode: bool,
 }
 
 impl Default for Actions {
@@ -59,7 +58,6 @@ impl Default for Actions {
             spot_lighting: false,
             lighting_intensity: 1000.0,
             material_roughness: 0.089,
-            camera_mode: false,
         }
     }
 }
