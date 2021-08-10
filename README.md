@@ -27,9 +27,9 @@ I will publish to cargo when it gets more feature complete.
 ## File Format Support
 
 Supported formats:
-    * Ply
-    * Obj
-    * Stl
+  * Ply
+  * Obj
+  * Stl
 
 ## Showcase
 
@@ -120,7 +120,6 @@ CTRL-S will save a mr-config.ron, and mr-camera-config.ron file to the data dire
 - [ ] Profiling code, debugging is flakey so profiling code goes a long way as an alternative to println debugging
 - [ ] Better Mouse/Camera System (FPS & Orbit)
   - [ ] Move to smooth-bevy-cameras
-- [ ] CTRL-F to focus on mesh
 - [ ] Support for points from stl, ply, vtk, obj
   - [ ] Visualization of points with spheres & arrows where there is velocity & acceleration data
   - [ ] Look into shader to do same
@@ -139,6 +138,7 @@ CTRL-S will save a mr-config.ron, and mr-camera-config.ron file to the data dire
 
 ## Done
 
+- [X] CTRL-F to focus on mesh
 - [X] CTRL-C to follow/unfollow camera
 - [X] Allow to set via actions the initial load LOD
 - [X] Release mouse when focus lost
