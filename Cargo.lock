@@ -2501,6 +2501,7 @@ dependencies = [
  "ron",
  "serde",
  "serde_json",
+ "smooth-bevy-cameras",
  "structopt",
  "walkdir",
  "winit 0.25.0",
@@ -3683,6 +3684,16 @@ dependencies = [
  "wayland-client",
  "wayland-cursor",
  "wayland-protocols",
+]
+
+[[package]]
+name = "smooth-bevy-cameras"
+version = "0.1.0"
+source = "git+https://github.com/bonsairobo/smooth-bevy-cameras.git#b68cf57f9b57c23f9e21969eecb50f3349ef4bdc"
+dependencies = [
+ "approx 0.4.0",
+ "bevy",
+ "serde",
 ]
 
 [[package]]

@@ -15,6 +15,10 @@ use bevy::app::Events;
 use bevy::window::WindowFocused;
 use bevy::{pbr::AmbientLight, prelude::*, render::camera::PerspectiveProjection};
 use bevy_inspector_egui::bevy_egui::EguiContext;
+use smooth_bevy_cameras::controllers::fps::{
+    FpsCameraBundle, FpsCameraController, FpsCameraPlugin,
+};
+use smooth_bevy_cameras::LookTransformPlugin;
 
 pub struct PlayerPlugin;
 
@@ -25,7 +29,8 @@ impl Plugin for PlayerPlugin {
         &self,
         app: &mut AppBuilder,
     ) {
-        // app.add_plugin(FlyCameraPlugin);
+        app.add_plugin(LookTransformPlugin)
+            .add_plugin(FpsCameraPlugin);
 
         app.add_system_set(
             SystemSet::on_enter(GameState::Playing)
@@ -51,48 +56,48 @@ impl Plugin for PlayerPlugin {
 
 fn disable_cursor_on_start(
     mut windows: ResMut<Windows>,
-    // mut query: Query<&mut FlyCamera>,
+    mut query: Query<&mut FpsCameraController>,
 ) {
     let window = windows.get_primary_mut().unwrap();
-    // for mut camera in query.iter_mut() {
-    //     window.set_cursor_lock_mode(false);
-    //     window.set_cursor_visibility(true);
-    //     camera.enabled = false;
-    // }
+    for mut camera in query.iter_mut() {
+        window.set_cursor_lock_mode(false);
+        window.set_cursor_visibility(true);
+        camera.enabled = false;
+    }
 }
 
 fn cursor_grab_system(
     mut windows: ResMut<Windows>,
     btn: Res<Input<MouseButton>>,
     key: Res<Input<KeyCode>>,
-    // mut query: Query<&mut FlyCamera>,
+    mut query: Query<&mut FpsCameraController>,
     ui_context: Res<EguiContext>,
     focus_events: Res<Events<WindowFocused>>,
 ) {
     let window = windows.get_primary_mut().unwrap();
-    // for mut camera in query.iter_mut() {
-    //     if btn.just_pressed(MouseButton::Left) {
-    //         if !ui_context.ctx().wants_pointer_input() {
-    //             window.set_cursor_lock_mode(true);
-    //             window.set_cursor_visibility(false);
-    //             camera.enabled = true;
-    //         }
-    //     }
+    for mut camera in query.iter_mut() {
+        if btn.just_pressed(MouseButton::Left) {
+            if !ui_context.ctx().wants_pointer_input() {
+                window.set_cursor_lock_mode(true);
+                window.set_cursor_visibility(false);
+                camera.enabled = true;
+            }
+        }
 
-    //     let mut focus_lost = false;
-    //     let mut reader = focus_events.get_reader();
-    //     for event in reader.iter(&focus_events) {
-    //         if !event.focused {
-    //             focus_lost = true;
-    //         }
-    //     }
+        let mut focus_lost = false;
+        let mut reader = focus_events.get_reader();
+        for event in reader.iter(&focus_events) {
+            if !event.focused {
+                focus_lost = true;
+            }
+        }
 
-    //     if key.just_pressed(KeyCode::Escape) || focus_lost {
-    //         window.set_cursor_lock_mode(false);
-    //         window.set_cursor_visibility(true);
-    //         camera.enabled = false;
-    //     }
-    // }
+        if key.just_pressed(KeyCode::Escape) || focus_lost {
+            window.set_cursor_lock_mode(false);
+            window.set_cursor_visibility(true);
+            camera.enabled = false;
+        }
+    }
 }
 
 fn check_lights(
@@ -166,7 +171,12 @@ fn spawn_camera(
         },
         ..Default::default()
     });
-
+    commands.spawn_bundle(FpsCameraBundle::new(
+        FpsCameraController::default(),
+        PerspectiveCameraBundle::default(),
+        eye,
+        target,
+    ));
     // .insert(fly_camera);
 }
 
