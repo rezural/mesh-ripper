@@ -13,9 +13,7 @@ impl Plugin for InputPlugin {
         app: &mut AppBuilder,
     ) {
         app.add_system_set(
-            SystemSet::on_update(GameState::Playing)
-                .with_system(set_movement_actions.system())
-                .after("update_mesh"),
+            SystemSet::on_update(GameState::Playing).with_system(set_movement_actions.system()),
         );
         app.init_resource::<Actions>().init_resource::<AppState>();
     }
@@ -37,7 +35,7 @@ fn set_movement_actions(
         actions.frame_direction = FrameDirection::Back;
     }
 
-    if keyboard_input.just_pressed(KeyCode::Space) {
+    if keyboard_input.just_pressed(KeyCode::X) {
         actions.paused = !actions.paused;
     }
 
@@ -56,12 +54,12 @@ fn set_movement_actions(
         }
     }
 
-    if keyboard_input.just_pressed(KeyCode::R) && !keyboard_input.pressed(KeyCode::LControl) {
-        actions.reset = true;
-    }
-
-    if keyboard_input.just_pressed(KeyCode::R) && keyboard_input.pressed(KeyCode::LControl) {
-        actions.reload = true;
+    if keyboard_input.just_pressed(KeyCode::R) {
+        if keyboard_input.pressed(KeyCode::LControl) {
+            actions.reload = true;
+        } else {
+            actions.reset = true;
+        }
     }
 
     if keyboard_input.just_pressed(KeyCode::F) {
