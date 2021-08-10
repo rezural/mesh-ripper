@@ -6,7 +6,6 @@ use super::resources::mesh_lookat_estimator::MeshLookAtEstimator;
 use super::resources::mesh_pool::MeshPool;
 use super::GameState;
 use bevy::prelude::*;
-use bevy_fly_camera::FlyCamera;
 pub struct ActionsPlugin;
 
 impl Plugin for ActionsPlugin {
@@ -30,7 +29,7 @@ fn camera_timeline_system(
     meshes: ResMut<Assets<Mesh>>,
     mut camera_system: ResMut<CameraSystem>,
     mut visualization: ResMut<CameraSystemVisualization>,
-    mut query: Query<(&mut FlyCamera, &mut Transform)>,
+    // mut query: Query<(&mut FlyCamera, &mut Transform)>,
     keyboard_input: Res<Input<KeyCode>>,
     mut loader: ResMut<GlobOrDirLoader>,
     pool: ResMut<MeshPool>,
@@ -49,13 +48,13 @@ fn camera_timeline_system(
         if let Some(timeline) = camera_system.enabled_timeline_mut() {
             if keyboard_input.just_pressed(KeyCode::C) && !keyboard_input.pressed(KeyCode::LControl)
             {
-                if let Ok((_, transform)) = query.single_mut() {
-                    let camera_pose = transform;
-                    timeline.add_frame(
-                        load_iterator.full_index_from_lod_index(pool.current_mesh_index),
-                        *camera_pose,
-                    );
-                }
+                // if let Ok((_, transform)) = query.single_mut() {
+                //     let camera_pose = transform;
+                //     timeline.add_frame(
+                //         load_iterator.full_index_from_lod_index(pool.current_mesh_index),
+                //         *camera_pose,
+                //     );
+                // }
             }
         }
     }
@@ -94,11 +93,11 @@ fn camera_timeline_system(
     if actions.focus_on_mesh {
         if let Some(current_mesh) = pool.current_mesh(&fluid_assets) {
             if let Some(mesh) = meshes.get(current_mesh.1.clone()) {
-                if let Ok((_, mut transform)) = query.single_mut() {
-                    if let Some(new_transform) = MeshLookAtEstimator::transform(mesh) {
-                        (*transform) = new_transform;
-                    }
-                }
+                // if let Ok((_, mut transform)) = query.single_mut() {
+                //     if let Some(new_transform) = MeshLookAtEstimator::transform(mesh) {
+                //         (*transform) = new_transform;
+                //     }
+                // }
             }
         }
         actions.focus_on_mesh = false;
@@ -120,16 +119,16 @@ fn camera_timeline_system(
     }
 
     if camera_system.follow_camera {
-        if let Ok((_, mut transform)) = query.single_mut() {
-            if let Some(timeline_transform) = camera_system.enabled_timeline().and_then(|ctl| {
-                ctl.transform_at_frame(
-                    load_iterator.full_index_from_lod_index(pool.current_mesh_index),
-                )
-            }) {
-                *transform = CameraFrame::isometry_to_transform(timeline_transform);
-                camera_system.current_transform = transform.clone();
-            }
-        }
+        // if let Ok((_, mut transform)) = query.single_mut() {
+        //     if let Some(timeline_transform) = camera_system.enabled_timeline().and_then(|ctl| {
+        //         ctl.transform_at_frame(
+        //             load_iterator.full_index_from_lod_index(pool.current_mesh_index),
+        //         )
+        //     }) {
+        //         *transform = CameraFrame::isometry_to_transform(timeline_transform);
+        //         camera_system.current_transform = transform.clone();
+        //     }
+        // }
     }
 }
 

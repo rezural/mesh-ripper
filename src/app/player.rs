@@ -14,7 +14,6 @@ use super::{loading::MeshAssets, AppOptions};
 use bevy::app::Events;
 use bevy::window::WindowFocused;
 use bevy::{pbr::AmbientLight, prelude::*, render::camera::PerspectiveProjection};
-use bevy_fly_camera::{FlyCamera, FlyCameraPlugin};
 use bevy_inspector_egui::bevy_egui::EguiContext;
 
 pub struct PlayerPlugin;
@@ -26,7 +25,7 @@ impl Plugin for PlayerPlugin {
         &self,
         app: &mut AppBuilder,
     ) {
-        app.add_plugin(FlyCameraPlugin);
+        // app.add_plugin(FlyCameraPlugin);
 
         app.add_system_set(
             SystemSet::on_enter(GameState::Playing)
@@ -52,48 +51,48 @@ impl Plugin for PlayerPlugin {
 
 fn disable_cursor_on_start(
     mut windows: ResMut<Windows>,
-    mut query: Query<&mut FlyCamera>,
+    // mut query: Query<&mut FlyCamera>,
 ) {
     let window = windows.get_primary_mut().unwrap();
-    for mut camera in query.iter_mut() {
-        window.set_cursor_lock_mode(false);
-        window.set_cursor_visibility(true);
-        camera.enabled = false;
-    }
+    // for mut camera in query.iter_mut() {
+    //     window.set_cursor_lock_mode(false);
+    //     window.set_cursor_visibility(true);
+    //     camera.enabled = false;
+    // }
 }
 
 fn cursor_grab_system(
     mut windows: ResMut<Windows>,
     btn: Res<Input<MouseButton>>,
     key: Res<Input<KeyCode>>,
-    mut query: Query<&mut FlyCamera>,
+    // mut query: Query<&mut FlyCamera>,
     ui_context: Res<EguiContext>,
     focus_events: Res<Events<WindowFocused>>,
 ) {
     let window = windows.get_primary_mut().unwrap();
-    for mut camera in query.iter_mut() {
-        if btn.just_pressed(MouseButton::Left) {
-            if !ui_context.ctx().wants_pointer_input() {
-                window.set_cursor_lock_mode(true);
-                window.set_cursor_visibility(false);
-                camera.enabled = true;
-            }
-        }
+    // for mut camera in query.iter_mut() {
+    //     if btn.just_pressed(MouseButton::Left) {
+    //         if !ui_context.ctx().wants_pointer_input() {
+    //             window.set_cursor_lock_mode(true);
+    //             window.set_cursor_visibility(false);
+    //             camera.enabled = true;
+    //         }
+    //     }
 
-        let mut focus_lost = false;
-        let mut reader = focus_events.get_reader();
-        for event in reader.iter(&focus_events) {
-            if !event.focused {
-                focus_lost = true;
-            }
-        }
+    //     let mut focus_lost = false;
+    //     let mut reader = focus_events.get_reader();
+    //     for event in reader.iter(&focus_events) {
+    //         if !event.focused {
+    //             focus_lost = true;
+    //         }
+    //     }
 
-        if key.just_pressed(KeyCode::Escape) || focus_lost {
-            window.set_cursor_lock_mode(false);
-            window.set_cursor_visibility(true);
-            camera.enabled = false;
-        }
-    }
+    //     if key.just_pressed(KeyCode::Escape) || focus_lost {
+    //         window.set_cursor_lock_mode(false);
+    //         window.set_cursor_visibility(true);
+    //         camera.enabled = false;
+    //     }
+    // }
 }
 
 fn check_lights(
@@ -147,28 +146,28 @@ fn spawn_camera(
     ambient_light.color = Color::WHITE;
     ambient_light.brightness = 0.4;
 
-    let fly_camera = FlyCamera {
-        max_speed: 1.,
-        accel: 2.,
+    // let fly_camera = FlyCamera {
+    //     max_speed: 1.,
+    //     accel: 2.,
 
-        key_down: KeyCode::Q,
-        key_up: KeyCode::E,
-        ..Default::default()
-    };
+    //     key_down: KeyCode::Q,
+    //     key_up: KeyCode::E,
+    //     ..Default::default()
+    // };
     let eye = Vec3::new(0., 40., 20.);
     let target = Vec3::new(0., 0., 0.);
-    commands
-        .spawn()
-        .insert_bundle(PerspectiveCameraBundle {
-            transform: Transform::from_translation(eye).looking_at(target, Vec3::Y),
-            perspective_projection: PerspectiveProjection {
-                fov: std::f32::consts::PI / 5.0,
-                near: 0.05,
-                ..Default::default()
-            },
+    let mut pc = commands.spawn();
+    let pc_bundle = pc.insert_bundle(PerspectiveCameraBundle {
+        transform: Transform::from_translation(eye).looking_at(target, Vec3::Y),
+        perspective_projection: PerspectiveProjection {
+            fov: std::f32::consts::PI / 5.0,
+            near: 0.05,
             ..Default::default()
-        })
-        .insert(fly_camera);
+        },
+        ..Default::default()
+    });
+
+    // .insert(fly_camera);
 }
 
 fn spawn_world(
@@ -324,7 +323,7 @@ fn check_mesh_assets(
     mut background_meshes: ResMut<BackgroundMeshes>,
     load_checker: Res<AssetLoadChecker<Mesh>>,
     meshes: Res<Assets<Mesh>>,
-    mut query: Query<(&mut FlyCamera, &mut Transform)>,
+    // mut query: Query<(&mut FlyCamera, &mut Transform)>,
 ) {
     load_checker.update(&mut *background_meshes, &*asset_server);
     (*background_meshes).spawn(&mut commands, &mut (*materials));
@@ -352,13 +351,13 @@ fn check_mesh_assets(
             pool.update_fluid(&mut commands, &fluid_assets, material, time.delta());
             if let Some(current_mesh) = pool.current_mesh(&fluid_assets) {
                 if !have_displayed {
-                    if let Some(mesh) = meshes.get(current_mesh.1.clone()) {
-                        if let Ok((_, mut transform)) = query.single_mut() {
-                            if let Some(new_transform) = MeshLookAtEstimator::transform(mesh) {
-                                (*transform) = new_transform;
-                            }
-                        }
-                    }
+                    // if let Some(mesh) = meshes.get(current_mesh.1.clone()) {
+                    //     if let Ok((_, mut transform)) = query.single_mut() {
+                    //         if let Some(new_transform) = MeshLookAtEstimator::transform(mesh) {
+                    //             (*transform) = new_transform;
+                    //         }
+                    //     }
+                    // }
                 }
                 actions.current_file = current_mesh.0.clone();
             }

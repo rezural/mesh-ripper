@@ -42,7 +42,7 @@ bevy-inspector-egui = "0.5"
 bevy_kira_audio = { version = "0.4" } 
 bevy_gizmos  = { git = "https://github.com/rezural/bevy_gizmos.git", branch = "main" }
 glam = { version = "0.13", features = [ "mint" ] }
-bevy_fly_camera = "0.7"
+# bevy_fly_camera = "0.7"
 
 bevy_stl = "0.3"
 bevy_obj = { git = "https://github.com/rezural/bevy_obj", branch = "create-normals-and-uv-data" }
