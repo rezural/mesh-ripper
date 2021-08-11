@@ -4,6 +4,7 @@ use super::resources::camera::CameraSystem;
 use super::resources::mesh_pool::MeshPool;
 use super::GameState;
 use bevy::prelude::*;
+use smooth_bevy_cameras::controllers::fps::{ControlEvent, FpsCameraController};
 
 pub struct InputPlugin;
 
@@ -26,6 +27,9 @@ fn set_movement_actions(
     fluid_assets: ResMut<MeshAssets>,
     materials: ResMut<Assets<StandardMaterial>>,
     mut camera_system: ResMut<CameraSystem>,
+    controllers: Query<&FpsCameraController>,
+    keyboard: Res<Input<KeyCode>>,
+    mut events: EventWriter<ControlEvent>,
 ) {
     if keyboard_input.just_pressed(KeyCode::T) {
         actions.frame_direction = FrameDirection::Forward;
@@ -35,7 +39,7 @@ fn set_movement_actions(
         actions.frame_direction = FrameDirection::Back;
     }
 
-    if keyboard_input.just_pressed(KeyCode::X) {
+    if keyboard_input.just_pressed(KeyCode::Space) {
         actions.paused = !actions.paused;
     }
 
@@ -85,6 +89,44 @@ fn set_movement_actions(
     if keyboard_input.just_pressed(KeyCode::C) {
         if keyboard_input.pressed(KeyCode::LControl) {
             camera_system.follow_camera = !camera_system.follow_camera;
+        }
+    }
+
+    // Can only control one camera at a time.
+    let controller = if let Some(controller) = controllers.iter().next() {
+        controller
+    } else {
+        return;
+    };
+
+    let FpsCameraController {
+        enabled,
+        translate_sensitivity,
+        ..
+    } = *controller;
+
+    if !enabled {
+        return;
+    }
+    let translate_sensitivity = if keyboard.pressed(KeyCode::LControl) {
+        translate_sensitivity / 10.
+    } else {
+        translate_sensitivity
+    };
+
+    for (key, dir) in [
+        (KeyCode::W, Vec3::Z),
+        (KeyCode::A, Vec3::X),
+        (KeyCode::S, -Vec3::Z),
+        (KeyCode::D, -Vec3::X),
+        (KeyCode::Q, -Vec3::Y),
+        (KeyCode::E, Vec3::Y),
+    ]
+    .iter()
+    .cloned()
+    {
+        if keyboard.pressed(key) {
+            events.send(ControlEvent::TranslateEye(translate_sensitivity * dir));
         }
     }
 }

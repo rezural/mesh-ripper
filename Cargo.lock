@@ -3689,7 +3689,7 @@ dependencies = [
 [[package]]
 name = "smooth-bevy-cameras"
 version = "0.1.0"
-source = "git+https://github.com/bonsairobo/smooth-bevy-cameras.git#b68cf57f9b57c23f9e21969eecb50f3349ef4bdc"
+source = "git+https://github.com/rezural/smooth-bevy-cameras.git?rev=a4af96c#a4af96c49e373b60e8661547e40455e0db8a2f8d"
 dependencies = [
  "approx 0.4.0",
  "bevy",

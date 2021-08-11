@@ -56,7 +56,9 @@ serde = "1"
 serde_json = "1"
 ron = { version = "0.6" }
 walkdir = "2.3"
-smooth-bevy-cameras = { git = "https://github.com/bonsairobo/smooth-bevy-cameras.git" }
+# smooth-bevy-cameras = { git = "https://github.com/bonsairobo/smooth-bevy-cameras" }
+smooth-bevy-cameras = { git = "https://github.com/rezural/smooth-bevy-cameras", rev = "a4af96c" }
+# smooth-bevy-cameras = { path = "vendor/smooth-bevy-cameras" }
 
 [build-dependencies]
 embed-resource = "1.6"

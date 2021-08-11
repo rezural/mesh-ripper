@@ -15,7 +15,7 @@ use bevy::window::WindowFocused;
 use bevy::{pbr::AmbientLight, prelude::*, render::camera::PerspectiveProjection};
 use bevy_inspector_egui::bevy_egui::EguiContext;
 use smooth_bevy_cameras::controllers::fps::{
-    FpsCameraBundle, FpsCameraController, FpsCameraPlugin,
+    default_mouse_input_map, FpsCameraBundle, FpsCameraControlPlugin, FpsCameraController,
 };
 use smooth_bevy_cameras::{LookTransform, LookTransformPlugin};
 
@@ -29,7 +29,7 @@ impl Plugin for PlayerPlugin {
         app: &mut AppBuilder,
     ) {
         app.add_plugin(LookTransformPlugin)
-            .add_plugin(FpsCameraPlugin);
+            .add_plugin(FpsCameraControlPlugin);
 
         app.add_system_set(
             SystemSet::on_enter(GameState::Playing)
@@ -41,7 +41,8 @@ impl Plugin for PlayerPlugin {
                 .with_system(handle_actions.system())
                 .with_system(check_lights.system())
                 .with_system(check_for_reload.system())
-                .with_system(cursor_grab_system.system()),
+                .with_system(cursor_grab_system.system())
+                .with_system(default_mouse_input_map.system()),
         )
         .add_system_set(SystemSet::on_exit(GameState::Playing).with_system(remove_player.system()))
         .add_system_set(
@@ -150,7 +151,7 @@ fn spawn_camera(
     let eye = Vec3::new(0., 40., 20.);
     let target = Vec3::new(0., 0., 0.);
     let mut pc = commands.spawn();
-    let _pc_bundle = pc.insert_bundle(PerspectiveCameraBundle {
+    let pc_bundle = PerspectiveCameraBundle {
         transform: Transform::from_translation(eye).looking_at(target, Vec3::Y),
         perspective_projection: PerspectiveProjection {
             fov: std::f32::consts::PI / 5.0,
@@ -158,13 +159,13 @@ fn spawn_camera(
             ..Default::default()
         },
         ..Default::default()
-    });
+    };
     commands.spawn_bundle(FpsCameraBundle::new(
         FpsCameraController {
             smoothing_weight: 0.1,
             ..Default::default()
         },
-        PerspectiveCameraBundle::default(),
+        pc_bundle,
         eye,
         target,
     ));
