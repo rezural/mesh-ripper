@@ -97,14 +97,14 @@ fn update_camera_system_transform(
             ctl.transform_at_frame(load_iterator.full_index_from_lod_index(pool.current_mesh_index))
         }) {
             let camera_transform = CameraFrame::isometry_to_transform(timeline_transform);
-            // (*bevy_transform) = camera_transform;
+            (*bevy_transform) = camera_transform;
 
-            let eye = camera_transform.translation;
-            let change = camera_transform.rotation.mul_vec3(-Vec3::Z);
-            let target = eye + change;
+            // let eye = camera_transform.translation;
+            // let change = camera_transform.rotation.mul_vec3(-Vec3::Z);
+            // let target = eye + change;
 
-            transform.eye = eye;
-            transform.target = target;
+            // transform.eye = eye;
+            // transform.target = target;
         }
     }
 }
