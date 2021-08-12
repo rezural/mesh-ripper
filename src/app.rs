@@ -3,6 +3,7 @@ pub mod input;
 pub mod inspector;
 pub mod loading;
 pub mod player;
+pub mod render;
 pub mod resources;
 
 use actions::ActionsPlugin;
@@ -10,6 +11,8 @@ use bevy::app::AppBuilder;
 use input::InputPlugin;
 use loading::LoadingPlugin;
 use player::PlayerPlugin;
+use render::RenderPlugin;
+
 use resources::camera::*;
 
 use resources::actions::Actions;
@@ -62,6 +65,7 @@ impl Plugin for GamePlugin {
             .add_plugin(InputPlugin)
             .add_plugin(PlayerPlugin)
             .add_plugin(ActionsPlugin)
+            .add_plugin(RenderPlugin)
             // Widgets & Gizmos
             .add_plugin(GizmosPlugin)
             // Inspectable

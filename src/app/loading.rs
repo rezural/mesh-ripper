@@ -1,8 +1,10 @@
 mod paths;
 
 use std::path::Path;
+use std::time::Duration;
 
 use super::resources::background_meshes::BackgroundMeshes;
+use super::resources::mesh_pool::MeshPool;
 use super::GameState;
 use super::{
     loading::paths::PATHS, resources::lod_midpoint_iterator::MidpointIterator, AppOptions,
@@ -40,9 +42,6 @@ impl Plugin for LoadingPlugin {
         .add_system_set(
             SystemSet::on_update(GameState::Loading).with_system(check_assets.system()),
         );
-        // .add_system_set(
-        //     SystemSet::on_update(GameState::Playing).with_system(check_mesh_assets.system()),
-        // );
     }
 }
 
@@ -50,7 +49,6 @@ pub struct LoadingState {
     textures: Vec<HandleUntyped>,
     fonts: Vec<HandleUntyped>,
     audio: Vec<HandleUntyped>,
-    // fluids: Vec<(String, HandleUntyped)>,
 }
 
 #[derive(Clone)]
@@ -129,6 +127,13 @@ fn register_initial_resources(
         loading: load_manager.loading.clone(),
         material: material,
     });
+
+    let fluid_pool_length = load_manager.loaded.len();
+    let pool = MeshPool::new(
+        fluid_pool_length,
+        Duration::from_secs_f32(Actions::default().advance_every),
+    );
+    commands.insert_resource(pool);
 
     state.set(GameState::Loading).unwrap();
 }

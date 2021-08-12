@@ -6,7 +6,6 @@ use super::resources::asset_load_checker::AssetLoadChecker;
 use super::resources::background_meshes::BackgroundMeshes;
 use super::resources::camera::CameraSystem;
 use super::resources::glob_or_dir_loader::GlobOrDirLoader;
-use super::resources::mesh_aabb_estimator::MeshAABBEstimator;
 use super::resources::mesh_lookat_estimator::MeshLookAtEstimator;
 use super::resources::mesh_pool::MeshPool;
 use super::GameState;
@@ -14,8 +13,11 @@ use super::{loading::MeshAssets, AppOptions};
 use bevy::app::Events;
 use bevy::window::WindowFocused;
 use bevy::{pbr::AmbientLight, prelude::*, render::camera::PerspectiveProjection};
-use bevy_fly_camera::{FlyCamera, FlyCameraPlugin};
 use bevy_inspector_egui::bevy_egui::EguiContext;
+use smooth_bevy_cameras::controllers::fps::{
+    default_mouse_input_map, FpsCameraBundle, FpsCameraControlPlugin, FpsCameraController,
+};
+use smooth_bevy_cameras::{LookTransform, LookTransformPlugin};
 
 pub struct PlayerPlugin;
 
@@ -26,22 +28,21 @@ impl Plugin for PlayerPlugin {
         &self,
         app: &mut AppBuilder,
     ) {
-        app.add_plugin(FlyCameraPlugin);
+        app.add_plugin(LookTransformPlugin)
+            .add_plugin(FpsCameraControlPlugin);
 
         app.add_system_set(
             SystemSet::on_enter(GameState::Playing)
                 .with_system(spawn_camera.system())
-                .with_system(spawn_world.system())
                 .with_system(disable_cursor_on_start.system()),
         )
         .add_system_set(
             SystemSet::on_update(GameState::Playing)
                 .with_system(handle_actions.system())
-                .with_system(update_mesh.system())
-                .label("update_mesh")
                 .with_system(check_lights.system())
                 .with_system(check_for_reload.system())
-                .with_system(cursor_grab_system.system()),
+                .with_system(cursor_grab_system.system())
+                .with_system(default_mouse_input_map.system()),
         )
         .add_system_set(SystemSet::on_exit(GameState::Playing).with_system(remove_player.system()))
         .add_system_set(
@@ -52,7 +53,7 @@ impl Plugin for PlayerPlugin {
 
 fn disable_cursor_on_start(
     mut windows: ResMut<Windows>,
-    mut query: Query<&mut FlyCamera>,
+    mut query: Query<&mut FpsCameraController>,
 ) {
     let window = windows.get_primary_mut().unwrap();
     for mut camera in query.iter_mut() {
@@ -66,7 +67,7 @@ fn cursor_grab_system(
     mut windows: ResMut<Windows>,
     btn: Res<Input<MouseButton>>,
     key: Res<Input<KeyCode>>,
-    mut query: Query<&mut FlyCamera>,
+    mut query: Query<&mut FpsCameraController>,
     ui_context: Res<EguiContext>,
     focus_events: Res<Events<WindowFocused>>,
 ) {
@@ -147,41 +148,27 @@ fn spawn_camera(
     ambient_light.color = Color::WHITE;
     ambient_light.brightness = 0.4;
 
-    let fly_camera = FlyCamera {
-        max_speed: 1.,
-        accel: 2.,
-
-        key_down: KeyCode::Q,
-        key_up: KeyCode::E,
-        ..Default::default()
-    };
     let eye = Vec3::new(0., 40., 20.);
     let target = Vec3::new(0., 0., 0.);
-    commands
-        .spawn()
-        .insert_bundle(PerspectiveCameraBundle {
-            transform: Transform::from_translation(eye).looking_at(target, Vec3::Y),
-            perspective_projection: PerspectiveProjection {
-                fov: std::f32::consts::PI / 5.0,
-                near: 0.05,
-                ..Default::default()
-            },
+    let mut pc = commands.spawn();
+    let pc_bundle = PerspectiveCameraBundle {
+        transform: Transform::from_translation(eye).looking_at(target, Vec3::Y),
+        perspective_projection: PerspectiveProjection {
+            fov: std::f32::consts::PI / 5.0,
+            near: 0.01,
             ..Default::default()
-        })
-        .insert(fly_camera);
-}
-
-fn spawn_world(
-    mut commands: Commands,
-    fluid_assets: Res<MeshAssets>,
-    actions: Res<Actions>,
-) {
-    let fluid_pool_length = fluid_assets.loaded.len();
-    let pool = MeshPool::new(
-        fluid_pool_length,
-        Duration::from_secs_f32(actions.advance_every),
-    );
-    commands.insert_resource(pool.clone());
+        },
+        ..Default::default()
+    };
+    commands.spawn_bundle(FpsCameraBundle::new(
+        FpsCameraController {
+            smoothing_weight: 0.1,
+            ..Default::default()
+        },
+        pc_bundle,
+        eye,
+        target,
+    ));
 }
 
 fn handle_actions(
@@ -262,32 +249,6 @@ fn handle_actions(
     }
 }
 
-fn update_mesh(
-    mut commands: Commands,
-    mut materials: ResMut<Assets<StandardMaterial>>,
-    fluid_assets: ResMut<MeshAssets>,
-    mut actions: ResMut<Actions>,
-    mut pool: ResMut<MeshPool>,
-    time: Res<Time>,
-) {
-    // println!("update_mesh: {:?}", time.time_since_startup());`
-    let material = materials.get_handle(fluid_assets.material.id);
-    let material = materials.get_mut(material.clone());
-
-    if let Some(material) = material {
-        material.base_color = actions.fluid_color;
-        material.base_color.set_a(actions.opacity);
-        material.double_sided = true;
-        material.roughness = actions.material_roughness;
-        let material = materials.get_handle(fluid_assets.material.id);
-        pool.update_fluid(&mut commands, &fluid_assets, material, time.delta());
-        if let Some(current_mesh) = pool.current_mesh(&fluid_assets) {
-            actions.current_file = current_mesh.0.clone();
-            actions.current_frame = pool.current_mesh_index;
-        }
-    }
-}
-
 fn check_for_reload(
     mut actions: ResMut<Actions>,
     config: Res<AppOptions>,
@@ -324,7 +285,7 @@ fn check_mesh_assets(
     mut background_meshes: ResMut<BackgroundMeshes>,
     load_checker: Res<AssetLoadChecker<Mesh>>,
     meshes: Res<Assets<Mesh>>,
-    mut query: Query<(&mut FlyCamera, &mut Transform)>,
+    mut query: Query<(&mut FpsCameraController, &mut LookTransform)>,
 ) {
     load_checker.update(&mut *background_meshes, &*asset_server);
     (*background_meshes).spawn(&mut commands, &mut (*materials));
@@ -339,36 +300,6 @@ fn check_mesh_assets(
 
     fluid_assets.loading = load_manager.loading.clone();
 
-    if load_manager.loaded.len() > 0 {
-        let material = materials.get_handle(fluid_assets.material.id);
-        let material = materials.get_mut(material.clone());
-
-        if let Some(material) = material {
-            material.base_color = actions.fluid_color;
-            material.base_color.set_a(actions.opacity);
-            material.double_sided = true;
-            let material = materials.get_handle(fluid_assets.material.id);
-            let have_displayed = pool.have_displayed;
-            pool.update_fluid(&mut commands, &fluid_assets, material, time.delta());
-            if let Some(current_mesh) = pool.current_mesh(&fluid_assets) {
-                if !have_displayed {
-                    if let Some(mesh) = meshes.get(current_mesh.1.clone()) {
-                        if let Ok((_, mut transform)) = query.single_mut() {
-                            if let Some(new_transform) = MeshLookAtEstimator::transform(mesh) {
-                                (*transform) = new_transform;
-                            }
-                        }
-                    }
-                }
-                actions.current_file = current_mesh.0.clone();
-            }
-        }
-    }
-    // println!(
-    //     "fluids_loaded: {}, {}",
-    //     fluid_assets.loaded.len(),
-    //     load_manager.loaded.len()
-    // );
     actions.fluids_loaded = fluid_assets.loaded.len();
     actions.fluids_loaded_percent = (fluid_assets.loaded.len().max(1) as f32
         / (fluid_assets.loaded.len() + load_manager.loading.len()) as f32)
