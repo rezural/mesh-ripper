@@ -4,7 +4,6 @@ Rips Meshes
 
 This is a a mesh series viewer for output from fluids simulations etc.
 
-[](https://youtu.be/l4Q5ClC5F44)
 [![Strange Attractors](https://img.youtube.com/vi/l4Q5ClC5F44/maxresdefault.jpg)](https://youtu.be/l4Q5ClC5F44)
 
 ## Installation / Run
@@ -23,6 +22,12 @@ cargo run  --features=native --release --bin mesh-ripper
 ```
 
 I will publish to cargo when it gets more feature complete.
+
+## Getting help
+
+There is a discord channel [here](https://discord.com/channels/875696658845954048), this is probably the best place to get casual help.
+
+Reporting issues et al. are done via github's Issue tracker & PR requests.
 
 ## File Format Support
 
