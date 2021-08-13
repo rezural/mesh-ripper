@@ -1,3 +1,5 @@
+use crate::support::loader_fu::render::PointRenderOptions;
+
 use super::{
     super::inspector::vec_as_dropdown::VecAsDropdown, background_meshes::BackgroundMeshes,
 };
@@ -17,6 +19,11 @@ pub struct Actions {
     pub fluids_loaded_percent: f32,
     pub reload: bool,
     pub fluid_color: Color,
+    pub particle_render_style: PointRenderOptions,
+    #[inspectable(min = 0.0, max = 5.0, speed = 0.01)]
+    pub particle_radius: f32,
+    // #[inspectable(min = 100, max = 10000, speed = 10)]
+    pub max_particles_render: usize,
     #[inspectable(min = 0.0, max = 1.0, speed = 0.01)]
     pub opacity: f32,
     #[inspectable(label = "# Frames to Initially Load")]
@@ -59,6 +66,9 @@ impl Default for Actions {
             spot_lighting: false,
             lighting_intensity: 1000.0,
             material_roughness: 0.089,
+            particle_radius: 0.05,
+            particle_render_style: PointRenderOptions::Sphere,
+            max_particles_render: 1000,
             focus_on_mesh: false,
         }
     }

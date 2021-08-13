@@ -1,3 +1,5 @@
+use crate::support::loader_fu::render::RenderCache;
+
 use super::loading::MeshAssets;
 use super::resources::actions::Actions;
 use super::resources::camera::*;
@@ -38,6 +40,7 @@ fn update_mesh(
     meshes: Res<Assets<Mesh>>,
     mut transform_query: Query<(&mut FpsCameraController, &mut LookTransform, &mut Transform)>,
     time: Res<Time>,
+    render_cache: Res<RenderCache>,
 ) {
     if let Some(current_mesh) = pool.current_mesh(&fluid_assets) {
         if !pool.have_displayed {
@@ -76,7 +79,16 @@ fn update_mesh(
         //         &*pool,
         //     );
         // }
-        pool.update_fluid(&mut commands, &fluid_assets, material, time.delta());
+        pool.update_fluid(
+            &mut commands,
+            &fluid_assets,
+            material,
+            time.delta(),
+            &*render_cache,
+            &*meshes,
+            actions.particle_render_style,
+            actions.max_particles_render,
+        );
 
         if let Some(current_mesh) = pool.current_mesh(&fluid_assets) {
             actions.current_file = current_mesh.0.clone();

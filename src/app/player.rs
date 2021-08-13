@@ -1,12 +1,13 @@
 use std::time::Duration;
 
+use crate::support::loader_fu::render::RenderCache;
+
 use super::inspector::vec_as_dropdown::VecAsDropdown;
 use super::resources::actions::{Actions, State as AppState};
 use super::resources::asset_load_checker::AssetLoadChecker;
 use super::resources::background_meshes::BackgroundMeshes;
 use super::resources::camera::CameraSystem;
 use super::resources::glob_or_dir_loader::GlobOrDirLoader;
-use super::resources::mesh_lookat_estimator::MeshLookAtEstimator;
 use super::resources::mesh_pool::MeshPool;
 use super::GameState;
 use super::{loading::MeshAssets, AppOptions};
@@ -150,7 +151,7 @@ fn spawn_camera(
 
     let eye = Vec3::new(0., 40., 20.);
     let target = Vec3::new(0., 0., 0.);
-    let mut pc = commands.spawn();
+    // let mut pc = commands.spawn();
     let pc_bundle = PerspectiveCameraBundle {
         transform: Transform::from_translation(eye).looking_at(target, Vec3::Y),
         perspective_projection: PerspectiveProjection {
@@ -174,26 +175,35 @@ fn spawn_camera(
 fn handle_actions(
     mut commands: Commands,
     mut actions: ResMut<Actions>,
-    mut meshes: ResMut<MeshAssets>,
+    mut mesh_assets: ResMut<MeshAssets>,
     mut mesh_pool: ResMut<MeshPool>,
     asset_server: Res<AssetServer>,
     mut glob_or_dir_loader: ResMut<GlobOrDirLoader>,
     config: Res<AppOptions>,
     mut camera_system: ResMut<CameraSystem>,
     materials: ResMut<Assets<StandardMaterial>>,
+    meshes: Res<Assets<Mesh>>,
+    render_cache: Res<RenderCache>,
 ) {
     mesh_pool.advance_every = Duration::from_secs_f32(actions.advance_every);
     mesh_pool.frame_direction = actions.frame_direction.clone();
     mesh_pool.paused = actions.paused;
 
     if actions.reset {
-        let material = materials.get_handle(meshes.material.id);
+        let material = materials.get_handle(mesh_assets.material.id);
         mesh_pool.reset();
-        mesh_pool.redraw(&mut commands, &*meshes, material);
+        mesh_pool.redraw(
+            &mut commands,
+            &*mesh_assets,
+            material,
+            &*render_cache,
+            &*meshes,
+            actions.particle_render_style,
+        );
         actions.reset = false;
     }
 
-    mesh_pool.num_fluids = meshes.loaded.len();
+    mesh_pool.num_fluids = mesh_assets.loaded.len();
 
     let load_manager = glob_or_dir_loader.load_manager_mut();
     // if the user has chosen a higer asset load lod
@@ -203,7 +213,7 @@ fn handle_actions(
             && load_manager.fully_loaded()
         {
             load_manager.next_lod_and_reload(&asset_server);
-            meshes.loading = load_manager.loading.clone();
+            mesh_assets.loading = load_manager.loading.clone();
         }
     }
 
@@ -221,6 +231,18 @@ fn handle_actions(
         );
         let load_manager = glob_or_dir_loader.load_manager();
         actions.load_number_of_frames = VecAsDropdown::new(load_manager.load_iterator.get_lods());
+
+        let material = materials.get_handle(mesh_assets.material.id);
+
+        mesh_pool.clear(&mut commands, &*meshes);
+        mesh_pool.redraw(
+            &mut commands,
+            &*mesh_assets,
+            material,
+            &*render_cache,
+            &*meshes,
+            actions.particle_render_style,
+        );
 
         if let Some(dataset) = actions.datasets.selected_value() {
             if let Ok(dir) = std::env::current_dir() {

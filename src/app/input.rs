@@ -1,3 +1,5 @@
+use crate::support::loader_fu::render::RenderCache;
+
 use super::loading::MeshAssets;
 use super::resources::actions::{Actions, FrameDirection, State as AppState};
 use super::resources::camera::CameraSystem;
@@ -30,6 +32,8 @@ fn set_movement_actions(
     controllers: Query<&FpsCameraController>,
     keyboard: Res<Input<KeyCode>>,
     mut events: EventWriter<ControlEvent>,
+    meshes: Res<Assets<Mesh>>,
+    render_cache: Res<RenderCache>,
 ) {
     if keyboard_input.just_pressed(KeyCode::T) {
         actions.frame_direction = FrameDirection::Forward;
@@ -46,15 +50,29 @@ fn set_movement_actions(
     if actions.paused {
         let material = materials.get_handle(fluid_assets.material.id);
         if keyboard_input.pressed(KeyCode::Left) {
-            mesh_pool.despawn_mesh(&mut commands);
+            mesh_pool.despawn_mesh(&mut commands, &*meshes);
             mesh_pool.retreat();
-            mesh_pool.spawn_mesh(&*fluid_assets, material.clone(), &mut commands)
+            mesh_pool.spawn_mesh(
+                &*fluid_assets,
+                material.clone(),
+                &mut commands,
+                &*meshes,
+                &*render_cache,
+                actions.particle_render_style,
+            )
         }
 
         if keyboard_input.pressed(KeyCode::Right) {
-            mesh_pool.despawn_mesh(&mut commands);
+            mesh_pool.despawn_mesh(&mut commands, &*meshes);
             mesh_pool.advance();
-            mesh_pool.spawn_mesh(&*fluid_assets, material.clone(), &mut commands)
+            mesh_pool.spawn_mesh(
+                &*fluid_assets,
+                material.clone(),
+                &mut commands,
+                &*meshes,
+                &*render_cache,
+                actions.particle_render_style,
+            )
         }
     }
 

@@ -14,6 +14,7 @@ use crate::app::resources::actions::Actions;
 use crate::app::resources::asset_load_checker::{AssetLoadChecker, LoadingSource};
 use crate::app::resources::glob_or_dir_loader::GlobOrDirLoader;
 use crate::app::resources::load_manager::LoadManager;
+use crate::support::loader_fu::render::{FeatureAwareRenderer, RenderCache};
 use bevy::asset::LoadState;
 use bevy::prelude::*;
 use bevy_kira_audio::AudioSource;
@@ -74,6 +75,7 @@ fn register_initial_resources(
     config: Res<AppOptions>,
     mut materials: ResMut<Assets<StandardMaterial>>,
     mut state: ResMut<State<GameState>>,
+    mut meshes: ResMut<Assets<Mesh>>,
     asset_server: Res<AssetServer>,
     actions: Res<Actions>,
 ) {
@@ -118,6 +120,8 @@ fn register_initial_resources(
         dataset_dirs.extend(entries);
     }
 
+    let particle_radius = actions.particle_radius;
+    let particle_sample_size = actions.max_particles_render;
     actions.datasets = VecAsDropdown::new(dataset_dirs);
 
     commands.insert_resource(actions);
@@ -132,8 +136,15 @@ fn register_initial_resources(
     let pool = MeshPool::new(
         fluid_pool_length,
         Duration::from_secs_f32(Actions::default().advance_every),
+        particle_sample_size,
     );
     commands.insert_resource(pool);
+
+    // This cache is for the PointRenderer code, to either render spheres, or directional arrows
+    let mut render_cache = RenderCache::new(particle_radius);
+    FeatureAwareRenderer::cache_meshes(&mut *meshes, particle_radius, &mut render_cache);
+
+    commands.insert_resource(render_cache);
 
     state.set(GameState::Loading).unwrap();
 }

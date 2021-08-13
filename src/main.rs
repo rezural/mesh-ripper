@@ -5,6 +5,7 @@
 use bevy_webgl2;
 
 pub mod app;
+pub mod support;
 
 use app::{AppOptions, GamePlugin};
 use bevy::prelude::{App, ClearColor, Color, Msaa, WindowDescriptor};

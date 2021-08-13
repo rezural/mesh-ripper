@@ -42,15 +42,15 @@ bevy-inspector-egui = "0.5"
 bevy_kira_audio = { version = "0.4" } 
 bevy_gizmos  = { git = "https://github.com/rezural/bevy_gizmos.git", branch = "main" }
 glam = { version = "0.13", features = [ "mint" ] }
-# bevy_fly_camera = "0.7"
 
 bevy_stl = "0.3"
 bevy_obj = { git = "https://github.com/rezural/bevy_obj", branch = "create-normals-and-uv-data" }
-bevy_ply = { version = "0.1", git = "https://github.com/rezural/bevy_ply", branch = "main" }
+# bevy_ply = { version = "0.1", git = "https://github.com/rezural/bevy_ply", branch = "main" }
+bevy_ply = { path = "vendor/bevy_ply" }
 mint = "0.5"
 
-nalgebra = { version = "0.27", features = [ "mint", "serde-serialize"] }
-parry3d = { version = "0.5", features = ["serde-serialize"] }
+nalgebra = { version = "0.28", features = [ "mint", "serde-serialize", "convert-glam013"] }
+parry3d = { version = "0.6", features = ["serde-serialize"] }
 
 serde = "1"
 serde_json = "1"
@@ -58,6 +58,7 @@ ron = { version = "0.6" }
 walkdir = "2.3"
 # smooth-bevy-cameras = { git = "https://github.com/bonsairobo/smooth-bevy-cameras" }
 smooth-bevy-cameras = { git = "https://github.com/rezural/smooth-bevy-cameras", rev = "a4af96c" }
+rapier3d = "0.10.1"
 # smooth-bevy-cameras = { path = "vendor/smooth-bevy-cameras" }
 
 [build-dependencies]

@@ -2,6 +2,8 @@ use std::time::Duration;
 
 use crate::app::loading::MeshAssets;
 use crate::app::resources::actions::FrameDirection;
+use crate::support::loader_fu::features::Features;
+use crate::support::loader_fu::render::{FeatureAwareRenderer, PointRenderOptions, RenderCache};
 use bevy::prelude::*;
 
 #[derive(Clone)]
@@ -12,10 +14,13 @@ pub struct MeshPool {
     pub paused: bool,
     pub current_mesh_index: usize,
     pub have_displayed: bool,
-    current_fluid_entity: Option<Entity>,
+    pub sample_size: usize,
+    current_fluid_entities: Option<Vec<Entity>>,
     current_mesh_handle: Option<Handle<Mesh>>,
     needs_update: bool,
     currently_advanced: Duration,
+    previous_mesh_size: usize,
+    sampled_indices: Vec<usize>,
     // current_fluid: &'a Handle<Mesh>,
 }
 
@@ -23,6 +28,7 @@ impl MeshPool {
     pub fn new(
         num_fluids: usize,
         advance_every: Duration,
+        sample_size: usize,
     ) -> Self {
         Self {
             num_fluids,
@@ -31,10 +37,13 @@ impl MeshPool {
             paused: true,
             have_displayed: false,
             current_mesh_index: 0,
-            current_fluid_entity: None,
+            current_fluid_entities: None,
             current_mesh_handle: None,
             needs_update: true,
             frame_direction: Default::default(),
+            sampled_indices: Vec::new(),
+            previous_mesh_size: 0,
+            sample_size,
         }
     }
 
@@ -51,6 +60,19 @@ impl MeshPool {
         } else {
             self.num_fluids - 1
         };
+    }
+
+    fn update_previous_mesh_size(
+        &mut self,
+        mesh: &Mesh,
+    ) {
+        let features = Features::new(mesh);
+
+        if let Some(vertices) = features.vertices() {
+            self.previous_mesh_size = vertices.len();
+        } else {
+            self.previous_mesh_size = 0;
+        }
     }
 
     fn move_in_frame_direction(&mut self) {
@@ -91,11 +113,13 @@ impl MeshPool {
     pub fn despawn_mesh(
         &mut self,
         commands: &mut Commands,
+        meshes: &Assets<Mesh>,
     ) {
-        if let Some(entity) = self.current_fluid_entity {
-            let mut current_entity = commands.entity(entity);
-            current_entity.despawn_recursive();
-            self.current_fluid_entity = None;
+        if let Some(current_mesh_handle) = self.current_mesh_handle.clone() {
+            if let Some(current_entities) = self.current_fluid_entities.as_deref() {
+                let renderer = FeatureAwareRenderer::new(current_mesh_handle);
+                renderer.despawn(commands, meshes, current_entities.to_vec());
+            }
         }
     }
 
@@ -104,33 +128,58 @@ impl MeshPool {
         fluids: &MeshAssets,
         water_material: Handle<StandardMaterial>,
         commands: &mut Commands,
+        meshes: &Assets<Mesh>,
+        render_cache: &RenderCache,
+        render_style: PointRenderOptions,
     ) {
         if let Some(new_fluid) = self.current_mesh(fluids) {
-            let entity = commands
-                .spawn()
-                .insert_bundle(PbrBundle {
-                    mesh: new_fluid.1.clone(),
-                    material: water_material.clone(),
-                    // transform: Transform {
-                    //     scale: Vec3::new(1., 4., 4.),
-                    //     ..Default::default()
-                    // },
-                    ..Default::default()
-                })
-                .id();
+            let mut mesh_size_changed = false;
+            if let Some(mesh) = meshes.get(new_fluid.1.clone()) {
+                let features = Features::new(mesh);
+                if let Some(vertices) = features.vertices() {
+                    if vertices.len() != self.previous_mesh_size {
+                        mesh_size_changed = true;
+                    }
+                } else {
+                    mesh_size_changed = true;
+                }
+            }
+            if self.sampled_indices.len() != self.sample_size || mesh_size_changed {
+                if let Some(actual_mesh) = meshes.get(new_fluid.1.clone()) {
+                    self.sampled_indices =
+                        FeatureAwareRenderer::sample_indices(actual_mesh, self.sample_size);
+                }
+            }
 
-            self.current_mesh_handle = Some(new_fluid.1.clone());
-            self.current_fluid_entity = Some(entity);
+            let renderer = FeatureAwareRenderer::new(new_fluid.1.clone());
+            self.current_fluid_entities = Some(renderer.spawn(
+                commands,
+                meshes,
+                water_material,
+                render_style,
+                render_cache,
+                &self.sampled_indices,
+            ));
+            if self.current_fluid_entities.is_some() {
+                self.current_mesh_handle = Some(new_fluid.1.clone());
+            }
+            if let Some(new_fluid) = self.current_mesh(fluids) {
+                if let Some(mesh) = meshes.get(new_fluid.1.clone()) {
+                    self.update_previous_mesh_size(mesh);
+                }
+            }
         }
     }
 
     pub fn clear(
         &mut self,
         commands: &mut Commands,
+        meshes: &Assets<Mesh>,
     ) {
-        self.despawn_mesh(commands);
+        self.despawn_mesh(commands, meshes);
         self.current_mesh_handle = None;
         self.current_mesh_index = 0;
+        self.sampled_indices.clear();
     }
 
     pub fn redraw(
@@ -138,9 +187,19 @@ impl MeshPool {
         commands: &mut Commands,
         fluids: &MeshAssets,
         water_material: Handle<StandardMaterial>,
+        render_cache: &RenderCache,
+        meshes: &Assets<Mesh>,
+        render_style: PointRenderOptions,
     ) {
-        self.despawn_mesh(commands);
-        self.spawn_mesh(fluids, water_material, commands);
+        self.despawn_mesh(commands, meshes);
+        self.spawn_mesh(
+            fluids,
+            water_material,
+            commands,
+            meshes,
+            render_cache,
+            render_style,
+        );
     }
 
     pub fn update_fluid(
@@ -149,6 +208,10 @@ impl MeshPool {
         fluids: &MeshAssets,
         water_material: Handle<StandardMaterial>,
         delta: Duration,
+        render_cache: &RenderCache,
+        meshes: &Assets<Mesh>,
+        render_style: PointRenderOptions,
+        sample_size: usize,
     ) {
         if !self.needs_update(delta) {
             self.currently_advanced += delta;
@@ -158,10 +221,17 @@ impl MeshPool {
         self.currently_advanced = Duration::default();
 
         if fluids.loaded.len() > 0 {
-            self.despawn_mesh(commands);
+            self.despawn_mesh(commands, meshes);
             self.move_in_frame_direction();
 
-            self.spawn_mesh(fluids, water_material, commands);
+            self.spawn_mesh(
+                fluids,
+                water_material,
+                commands,
+                meshes,
+                render_cache,
+                render_style,
+            );
             self.have_displayed = true;
         }
     }

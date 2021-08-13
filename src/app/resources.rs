@@ -8,4 +8,3 @@ pub mod lod_midpoint_iterator;
 pub mod mesh_aabb_estimator;
 pub mod mesh_lookat_estimator;
 pub mod mesh_pool;
-pub mod wave_positions;

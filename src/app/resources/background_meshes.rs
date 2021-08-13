@@ -20,7 +20,7 @@ impl BackgroundMeshes {
     ) {
         let to_display = self.available_but_not_displayed_yet();
         for mesh in &to_display {
-            println!("spawning");
+            // println!("spawning");
             let color = *self
                 .m2mat
                 .entry(mesh.clone())
